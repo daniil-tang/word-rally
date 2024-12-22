@@ -1,0 +1,21 @@
+{
+  "name": "Go + Node.js + React + Amazon Q DevContainer",
+  "dockerFile": "Dockerfile", // Or use a pre-built image if you're not building your own
+  "extensions": [
+    "AmazonWebServices.amazon-q-vscode", // Add Amazon Q extension here
+    "ms-vscode.go", // Go extension
+    "dbaeumer.vscode-eslint", // For ESLint support in React
+    "esbenp.prettier-vscode" // For Prettier support
+  ],
+  // "postCreateCommand": "cd /frontend && npm install", // You can add any additional setup commands here
+  "settings": {
+    "go.gopath": "/go", // Go-specific settings
+    "go.goroot": "/usr/local/go", // Go installation directory
+    "editor.formatOnSave": true // Enable format on save for general convenience
+  },
+  "runArgs": [
+    "--init", // Optional: Ensure container is initialized properly
+    "--network=host" // Use host networking, if required
+  ],
+  "forwardPorts": [3000, 8080] // Forward relevant ports (React app on 3000, Go server on 8080)
+}
