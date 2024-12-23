@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Game Client Example</title>
+    <style>
+        .container { margin: 20px; }
+        .game-info { margin-bottom: 20px; }
+        .controls { margin-top: 20px; }
+        button { margin: 5px; }
+        input { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-info">
+            <h2>Game Status: <span id="gameStatus">Not Connected</span></h2>
+            <div id="gameId"></div>
+            <div id="currentWord"></div>
+            <div id="players"></div>
+        </div>
+        
+        <div class="controls">
+            <div>
+                <input type="text" id="playerName" placeholder="Enter your name">
+                <button onclick="createGame()">Create Game</button>
+                <input type="text" id="gameIdInput" placeholder="Enter game ID">
+                <button onclick="joinGame()">Join Game</button>
+            </div>
+            
+            <div>
+                <select id="stance">
+                    <option value="tennis">Tennis</option>
+                    <option value="volleyball">Volleyball</option>
+                    <option value="football">Football</option>
+                </select>
+                <button onclick="selectStance()">Select Stance</button>
+            </div>
+            
+            <div>
+                <input type="text" id="theme" placeholder="Enter theme">
+                <button onclick="selectTheme()">Select Theme</button>
+            </div>
+            
+            <div>
+                <input type="text" id="letter" placeholder="Enter letter" maxlength="1">
+                <button onclick="guessLetter()">Guess Letter</button>
+            </div>
+            
+            <div>
+                <input type="text" id="targetLetter" placeholder="Enter target letter" maxlength="1">
+                <button onclick="useTackle()">Use Tackle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let currentGameId;
+        
+        function connect() {
+            ws = new WebSocket('ws://localhost:8080/ws');
+            
+            ws.onopen = function() {
+                document.getElementById('gameStatus').textContent = 'Connected';
+            };
+            
+            ws.onclose = function() {
+                document.getElementById('gameStatus').textContent = 'Disconnected';
+            };
+            
+            ws.onmessage = function(e) {
+                const game = JSON.parse(e.data);
+                updateGameDisplay(game);
+            };
+        }
+        
+        function updateGameDisplay(game) {
+            currentGameId = game.id;
+            document.getElementById('gameId').textContent = `Game ID: ${game.id}`;
+            document.getElementById('currentWord').textContent = `Word: ${game.revealedWord}`;
+            
+            const playersDiv = document.getElementById('players');
+            playersDiv.innerHTML = '<h3>Players:</h3>';
+            for (const [id, player] of Object.entries(game.players)) {
+                playersDiv.innerHTML += `
+                    <div>
+                        ${player.name} (${player.stance || 'No stance'})
+                        Score: ${player.score}
+                        ${game.currentTurn === id ? '(Current Turn)' : ''}
+                    </div>
+                `;
+            }
+        }
+        
+        function sendAction(type, data = {}) {
+            if (!ws) return;
+            
+            const action = {
+                type: type,
+                data: data
+            };
+            
+            ws.send(JSON.stringify(action));
+        }
+        
+        function createGame() {
+            const playerName = document.getElementById('playerName').value;
+            sendAction('create_game', { playerName });
+        }
+        
+        function joinGame() {
+            const playerName = document.getElementById('playerName').value;
+            const gameId = document.getElementById('gameIdInput').value;
+            sendAction('join_game', { gameId, playerName });
+        }
+        
+        function selectStance() {
+            const stance = document.getElementById('stance').value;
+            sendAction('select_stance', { gameId: currentGameId, stance });
+        }
+        
+        function selectTheme() {
+            const theme = document.getElementById('theme').value;
+            sendAction('select_theme', { gameId: currentGameId, theme });
+        }
+        
+        function guessLetter() {
+            const letter = document.getElementById('letter').value;
+            sendAction('guess_letter', { gameId: currentGameId, letter });
+        }
+        
+        function useTackle() {
+            const targetLetter = document.getElementById('targetLetter').value;
+            sendAction('use_tackle', { gameId: currentGameId, targetLetter });
+        }
+        
+        connect();
+    </script>
+</body>
+</html>
