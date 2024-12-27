@@ -8,6 +8,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type PlayerAction string
+
+const (
+	ActionGuess PlayerAction = "guess"
+)
+
 type GameMessage struct {
 	Event string `json:"event"`
 	Data  string `json:"data"`
@@ -28,10 +34,25 @@ type GameStartRequest struct {
 	Player  Player `json:"player"`  // The player data
 }
 
-type PlayerAction struct {
-	LobbyID string `json:"lobbyId"` // The ID of the lobby
-	Player  Player `json:"player"`  // The player data. Use ID to check if player is the host so that they can start the game
+type PlayerActionRequest struct {
+	LobbyID       string        `json:"lobbyId"` // The ID of the lobby
+	Player        Player        `json:"player"`  // The player data. Use ID to check if player is the host so that they can start the game
+	Action        PlayerAction  `json:"action"`  // The action to be performed
+	ActionDetails ActionDetails `json:"actionDetails"`
+}
 
+type ActionDetails struct {
+	GuessedLetters []rune   `json:"guessedLetters,omitempty"` // List of guessed letters (if guessing)
+	AbilityUsed    *Ability `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
+}
+
+// type GuessActionDetails struct {
+// 	GuessedLetters []rune   `json:"guessedLetters,omitempty"` // List of guessed letters (if guessing)
+// 	AbilityUsed    *Ability `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
+// }
+
+type Ability interface {
+	Activate() string
 }
 
 var upgrader = websocket.Upgrader{
@@ -176,9 +197,25 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 				}
 			case "playeraction":
 				log.Println("Player Action")
-			}
+				var playerActionRequest PlayerActionRequest
+				err := json.Unmarshal([]byte(message.Data), &playerActionRequest)
+				if err != nil {
+					log.Println("Error unmarshalling player action request", err)
+					continue
+				}
+				lobby, err := gm.HandlePlayerAction(playerActionRequest.LobbyID, playerActionRequest.Player, playerActionRequest.Action, playerActionRequest.ActionDetails)
 
-			log.Println(message.Data)
+				if err != nil {
+					log.Println("Error handling player action", err)
+					continue
+				}
+
+				err = conn.WriteJSON(lobby)
+				if err != nil {
+					log.Println("Error sending lobby back to client", err)
+					continue
+				}
+			}
 		}
 	}
 }

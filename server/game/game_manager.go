@@ -93,6 +93,28 @@ func (gm *GameManager) StartGame(lobbyID string, player Player) (*Lobby, error) 
 		return nil, fmt.Errorf("Not enough players to start game")
 	}
 
-	lobby.StartGame()
+	_, err := lobby.StartGame()
+	if err != nil {
+		return nil, err
+	}
+
+	return lobby, nil
+}
+
+func (gm *GameManager) HandlePlayerAction(lobbyID string, player Player, action PlayerAction, actionDetails ActionDetails) (*Lobby, error) {
+	if gm.lobbies[lobbyID] == nil {
+		return nil, fmt.Errorf("Lobby with ID %s doesn't exist", lobbyID)
+	}
+
+	lobby := gm.lobbies[lobbyID]
+
+	switch action {
+	case ActionGuess:
+		_, err := lobby.Guess(player, actionDetails)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return lobby, nil
 }
