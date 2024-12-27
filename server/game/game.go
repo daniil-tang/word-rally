@@ -1,5 +1,12 @@
 package game
 
+import (
+	"fmt"
+	"math/rand"
+
+	"github.com/google/uuid"
+)
+
 type GameState string
 
 const (
@@ -10,7 +17,7 @@ const (
 
 type Game struct {
 	ID    string
-	State string //waiting, inprogress, finished
+	State GameState //waiting, inprogress, finished
 	// Turn          int    //Turns within a rally, starts with current server
 	Score map[string]int
 	// Guesses       map[string][]rune
@@ -24,6 +31,40 @@ type Rally struct {
 	Guesses map[string][]rune //Make sure to initialize it with make(map[string][]rune)
 	Word    string
 	// CurrentServer int
+}
+
+func (lobby *Lobby) CreateNewGame() *Lobby {
+	lobby.Game = &Game{
+		ID:    uuid.NewString(),
+		State: StateWaiting,
+		Score: make(map[string]int),
+	}
+
+	for _, player := range lobby.Players {
+		lobby.Game.Score[player.ID] = 0
+	}
+	return lobby
+}
+
+func (lobby *Lobby) StartGame() (*Lobby, error) {
+	if lobby.Game == nil {
+		return nil, fmt.Errorf("Game instance not found")
+	}
+
+	//Get server
+	serverIndex := rand.Intn(len(lobby.Players))
+	lobby.Game.CurrentServer = serverIndex
+
+	// Initialize rally
+	lobby.Game.Rally = &Rally{
+		Word:    "Hello",
+		Guesses: make(map[string][]rune),
+		Turn:    serverIndex,
+	}
+
+	// Update game state, the UI will swap once it receives the new game state and data
+	lobby.Game.State = StateInProgress
+	return lobby, nil
 }
 
 // func CreateNewGame(lobbyID string) {

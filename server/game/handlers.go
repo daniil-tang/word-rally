@@ -9,11 +9,21 @@ import (
 )
 
 type GameMessage struct {
-	Type    string `json:"type"`
-	Content string `json:"content"`
+	Event string `json:"event"`
+	Data  string `json:"data"`
 }
 
 type LobbyJoinRequest struct {
+	LobbyID string `json:"lobbyId"` // The ID of the lobby
+	Player  Player `json:"player"`  // The player data
+}
+
+type GameCreateRequest struct {
+	LobbyID string `json:"lobbyId"` // The ID of the lobby
+	Player  Player `json:"player"`  // The player data
+}
+
+type GameStartRequest struct {
 	LobbyID string `json:"lobbyId"` // The ID of the lobby
 	Player  Player `json:"player"`  // The player data
 }
@@ -110,10 +120,10 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 				break
 			}
 
-			switch message.Type {
+			switch message.Event {
 			case "joinlobby":
 				var lobbyJoinRequest LobbyJoinRequest
-				err := json.Unmarshal([]byte(message.Content), &lobbyJoinRequest)
+				err := json.Unmarshal([]byte(message.Data), &lobbyJoinRequest)
 				if err != nil {
 					log.Println("Error unmarshalling lobby join request", err)
 					continue
@@ -122,18 +132,53 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 				// Needs error handling
 				if err != nil {
 					log.Println("Error joining lobby", err)
-					break
+					continue
 				}
 				// Needs propagating the updated lobby to other players
 				err = conn.WriteJSON(lobby)
 				if err != nil {
 					log.Println("Error sending lobby back to client", err)
-					return // Exit if writing fails
+					continue // Exit if writing fails
+				}
+			case "creategame":
+				var gameCreateRequest GameCreateRequest
+				err := json.Unmarshal([]byte(message.Data), &gameCreateRequest)
+				if err != nil {
+					log.Println("Error unmarshalling lobby game create request", err)
+					continue
+				}
+				lobby, err := gm.CreateGame(gameCreateRequest.LobbyID, gameCreateRequest.Player)
+				if err != nil {
+					log.Println("Error creating game", err)
+					continue
+				}
+				err = conn.WriteJSON(lobby)
+				if err != nil {
+					log.Println("Error sending lobby back to client", err)
+					continue
+				}
+			case "startgame":
+				var gameStartRequest GameStartRequest
+				err := json.Unmarshal([]byte(message.Data), &gameStartRequest)
+				if err != nil {
+					log.Println("Error unmarshalling lobby game start request", err)
+					continue
+				}
+				lobby, err := gm.StartGame(gameStartRequest.LobbyID, gameStartRequest.Player)
+				if err != nil {
+					log.Println("Error starting game", err)
+					continue
+				}
+				err = conn.WriteJSON(lobby)
+				if err != nil {
+					log.Println("Error sending lobby back to client", err)
+					continue
 				}
 			case "playeraction":
+				log.Println("Player Action")
 			}
 
-			log.Println(message.Content)
+			log.Println(message.Data)
 		}
 	}
 }
