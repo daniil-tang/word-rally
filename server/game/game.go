@@ -16,12 +16,13 @@ const (
 )
 
 type Game struct {
-	ID            string
-	State         GameState //waiting, inprogress, finished
-	Score         map[string]int
-	CurrentServer int //Randomize first server. Changes after every rally. First server = starting player
-	Rally         *Rally
-	Settings      *GameSettings
+	ID              string
+	State           GameState //waiting, inprogress, finished
+	Score           map[string]int
+	CurrentServer   int //Randomize first server. Changes after every rally. First server = starting player
+	Rally           *Rally
+	Settings        *GameSettings
+	PlayerCooldowns map[string]map[string]int
 }
 
 type Rally struct {
@@ -37,9 +38,10 @@ type GameSettings struct {
 
 func (lobby *Lobby) CreateNewGame() *Lobby {
 	lobby.Game = &Game{
-		ID:    uuid.NewString(),
-		State: StateWaiting,
-		Score: make(map[string]int),
+		ID:              uuid.NewString(),
+		State:           StateWaiting,
+		Score:           make(map[string]int),
+		PlayerCooldowns: make(map[string]map[string]int), //Cooldowns should carry over between rallies
 	}
 
 	for _, player := range lobby.Players {
@@ -98,6 +100,7 @@ func (lobby *Lobby) Guess(player Player, actionDetails ActionDetails) (*Lobby, e
 				unguessedIndexes = append(unguessedIndexes, i)
 			}
 
+			// Detect if failed guess? Does it matter?
 			for _, i := range unguessedIndexes {
 				if lobby.Game.Rally.Word[i] == byte(guessedLetter) {
 					lobby.Game.Rally.Guesses[player.ID][i] = guessedLetter
@@ -105,16 +108,39 @@ func (lobby *Lobby) Guess(player Player, actionDetails ActionDetails) (*Lobby, e
 				}
 			}
 
-			if isRuneArrayFilled(lobby.Game.Rally.Guesses[player.ID]) {
-				// Player wins the rally
-				lobby.incrementScore(player.ID)
-			} else {
-				// If the guess failed....return something else?
-				lobby.Game.Rally.Turn = (lobby.Game.Rally.Turn + 1) % len(lobby.Players)
-			}
+			// Moved this to EndTurn
+
+			// Add cooldown to the skill(+1) because the CD will be decremented this turn. Move Ability use to separate function...?
+			// Players can guess + they can select a skill.
+			// Once ready players hit "Run" or "Initiate" to trigger the guess + skill activation...?
+			// Skills should be processed AFTER the guess returns?
+
+			// What if the player has "Action Points". 1 GuessAction point and 1 SkillAction point. Player is free to trigger these in whichever order?
+			// Prolly there's a need for "Buffered" or "Queued" effects that will trigger during the opponent's turn.
 		}
 
 		// If there's duplicate letters in a word, only reveal one
+	}
+	return lobby, nil
+}
+
+func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
+	if isRuneArrayFilled(lobby.Game.Rally.Guesses[player.ID]) {
+		// Player wins the rally
+		lobby.incrementScore(player.ID)
+	} else {
+		// If the guess failed....return something else?
+
+		// Reduce cooldowns of all skills of current player
+		for skill, cd := range lobby.Game.PlayerCooldowns[player.ID] {
+			if cd > 0 {
+				lobby.Game.PlayerCooldowns[player.ID][skill] -= 1
+			}
+		}
+
+		// Set cooldown for any skills used
+
+		lobby.Game.Rally.Turn = (lobby.Game.Rally.Turn + 1) % len(lobby.Players)
 	}
 	return lobby, nil
 }

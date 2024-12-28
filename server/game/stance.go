@@ -15,6 +15,10 @@ type Stance interface {
 type TennisStance struct{}
 
 // Prolly make more sense to pass the game or the rally, because actions are performed on the rally.
+
+/*
+Backspin
+*/
 func (s TennisStance) UseSkill(skill string) string {
 	return "Tennis " + skill
 }
