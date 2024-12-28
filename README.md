@@ -26,3 +26,23 @@
 "event": "playeraction",
 "data": "{\"lobbyID\": \"NF4I\",\"player\":{\"ID\":\"32b2c1f7-fa78-45d5-8a42-f95fcbad49a6\",\"Name\":\"P2\"},\"action\":\"guess\",\"actionDetails\":{\"guessedLetters\":[72,101,108,108,111]}}"
 }
+
+{
+"event": "creategame",
+"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p1\",\"Name\":\"P1\"}}"
+}
+
+{
+"event": "joinlobby",
+"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p2\",\"Name\":\"P2\"}}"
+}
+
+{
+"event": "startgame",
+"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p1\",\"Name\":\"P1\"}}"
+}
+
+{
+"event": "updateplayersettings",
+"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p1\",\"Name\":\"P1\"},\n \"playerSettings\": {\"stance\": \"tennis\"}}"
+}

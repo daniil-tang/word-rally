@@ -34,6 +34,12 @@ type GameStartRequest struct {
 	Player  Player `json:"player"`  // The player data
 }
 
+type PlayerSettingsRequest struct {
+	LobbyID        string         `json:"lobbyId"` // The ID of the lobby
+	Player         Player         `json:"player"`  // The player data
+	PlayerSettings PlayerSettings `json:"playerSettings"`
+}
+
 type PlayerActionRequest struct {
 	LobbyID       string        `json:"lobbyId"` // The ID of the lobby
 	Player        Player        `json:"player"`  // The player data. Use ID to check if player is the host so that they can start the game
@@ -161,6 +167,9 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					log.Println("Error sending lobby back to client", err)
 					continue // Exit if writing fails
 				}
+			case "leavelobby":
+				//TODO
+				continue
 			case "creategame":
 				var gameCreateRequest GameCreateRequest
 				err := json.Unmarshal([]byte(message.Data), &gameCreateRequest)
@@ -207,6 +216,24 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 
 				if err != nil {
 					log.Println("Error handling player action", err)
+					continue
+				}
+
+				err = conn.WriteJSON(lobby)
+				if err != nil {
+					log.Println("Error sending lobby back to client", err)
+					continue
+				}
+			case "updateplayersettings":
+				var PlayerSettingsRequest PlayerSettingsRequest
+				err := json.Unmarshal([]byte(message.Data), &PlayerSettingsRequest)
+				if err != nil {
+					log.Println("Error unmarshalling player settings request", err)
+					continue
+				}
+				lobby, err := gm.UpdatePlayerSettings(PlayerSettingsRequest.LobbyID, PlayerSettingsRequest.Player, PlayerSettingsRequest.PlayerSettings)
+				if err != nil {
+					log.Println("Error updating player settings", err)
 					continue
 				}
 

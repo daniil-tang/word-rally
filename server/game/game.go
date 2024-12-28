@@ -16,14 +16,12 @@ const (
 )
 
 type Game struct {
-	ID    string
-	State GameState //waiting, inprogress, finished
-	// Turn          int    //Turns within a rally, starts with current server
-	Score map[string]int
-	// Guesses       map[string][]rune
-	// Word          string
+	ID            string
+	State         GameState //waiting, inprogress, finished
+	Score         map[string]int
 	CurrentServer int //Randomize first server. Changes after every rally. First server = starting player
 	Rally         *Rally
+	Settings      *GameSettings
 }
 
 type Rally struct {
@@ -31,6 +29,10 @@ type Rally struct {
 	Guesses map[string][]rune //Make sure to initialize it with make(map[string][]rune)
 	Word    string
 	// CurrentServer int
+}
+
+type GameSettings struct {
+	// Points and timer maybe
 }
 
 func (lobby *Lobby) CreateNewGame() *Lobby {
@@ -83,7 +85,6 @@ func (lobby *Lobby) initializeRally() *Lobby {
 }
 
 func (lobby *Lobby) Guess(player Player, actionDetails ActionDetails) (*Lobby, error) {
-	// lobby.
 	// Check if game is in progress
 	if lobby.Game.State != StateInProgress {
 		return nil, fmt.Errorf("Game not in progress")
@@ -138,55 +139,6 @@ func (lobby *Lobby) incrementScore(playerID string) {
 		lobby.initializeRally()
 	}
 }
-
-// func CreateNewGame(lobbyID string) {
-// 	// Instantiate new game with whatever params
-// 	lobbies[lobbyID].Game = &Game{
-// 		ID:    uuid.NewString(),
-// 		State: "waiting",
-// 		Score: make(map[string]int),
-// 	}
-
-// 	for _, player := range lobbies[lobbyID].Players {
-// 		lobbies[lobbyID].Game.Score[player.ID] = 0
-// 	}
-// }
-
-// func StartGame(lobbyID string) error {
-// 	if lobbies[lobbyID].Game == nil {
-// 		return fmt.Errorf("Game not initialized")
-// 	} else {
-// 		Start(lobbyID)
-// 		return nil
-// 	}
-// }
-
-// func Start(lobbyID string) {
-// 	game := lobbies[lobbyID].Game
-// 	game.State = "inprogress"
-// 	NewRally(lobbyID)
-
-// 	// game.CurrentServer
-// 	// Assign first server here?
-// }
-
-// func (g *Game) Guess() {
-// 	// needs player ID
-// 	// Breakdown word and compare letter by letter..?
-// 	// Check if someone wins a rally
-// 	// Update rally?
-
-// }
-
-// func NewRally(lobbyID string) {
-// 	// Randomly select word, hardcoded to "Hello" for now
-// 	game := lobbies[lobbyID].Game
-// 	game.Rally = &Rally{
-// 		Turn:    0,
-// 		Guesses: make(map[string][]rune),
-// 		Word:    "Hello",
-// 	}
-// }
 
 // Select Stance
 

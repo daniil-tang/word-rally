@@ -35,10 +35,11 @@ func (gm *GameManager) CreateLobby(hostPlayer Player) (*Lobby, error) {
 	defer gm.mutex.Unlock()
 
 	// Keep generating lobby ID until a unique ID is found
-	lobbyID := generateLobbyID()
-	for _, exists := gm.lobbies[lobbyID]; exists; {
-		lobbyID = generateLobbyID()
-	}
+	// lobbyID := generateLobbyID()
+	// for _, exists := gm.lobbies[lobbyID]; exists; {
+	// 	lobbyID = generateLobbyID()
+	// }
+	lobbyID := "ABCD"
 
 	newLobby := NewLobby(lobbyID, hostPlayer)
 	gm.lobbies[lobbyID] = newLobby
@@ -115,6 +116,18 @@ func (gm *GameManager) HandlePlayerAction(lobbyID string, player Player, action 
 			return nil, err
 		}
 	}
+
+	return lobby, nil
+}
+
+func (gm *GameManager) UpdatePlayerSettings(lobbyID string, player Player, settings PlayerSettings) (*Lobby, error) {
+	if gm.lobbies[lobbyID] == nil {
+		return nil, fmt.Errorf("Lobby with ID %s doesn't exist", lobbyID)
+	}
+
+	lobby := gm.lobbies[lobbyID]
+
+	lobby.UpdatePlayerSettings(player.ID, settings)
 
 	return lobby, nil
 }
