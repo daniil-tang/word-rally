@@ -11,7 +11,8 @@ import (
 type PlayerAction string
 
 const (
-	ActionGuess PlayerAction = "guess"
+	ActionGuess    PlayerAction = "guess"
+	ActionUseSkill PlayerAction = "useskill"
 )
 
 type GameMessage struct {
@@ -48,16 +49,16 @@ type PlayerActionRequest struct {
 }
 
 type ActionDetails struct {
-	GuessedLetters []rune   `json:"guessedLetters,omitempty"` // List of guessed letters (if guessing)
-	AbilityUsed    *Ability `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
+	GuessedLetters []rune `json:"guessedLetters,omitempty"` // List of guessed letters (if guessing)
+	SkillUsed      *Skill `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
 }
 
 // type GuessActionDetails struct {
 // 	GuessedLetters []rune   `json:"guessedLetters,omitempty"` // List of guessed letters (if guessing)
-// 	AbilityUsed    *Ability `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
+// 	SkillUsed    *Skill `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
 // }
 
-type Ability interface {
+type Skill interface {
 	Activate() string
 }
 

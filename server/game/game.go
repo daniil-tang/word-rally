@@ -26,10 +26,16 @@ type Game struct {
 }
 
 type Rally struct {
-	Turn    int
-	Guesses map[string][]rune //Make sure to initialize it with make(map[string][]rune)
-	Word    string
+	Turn             int
+	TurnActionPoints map[string]*TurnActionPoints
+	Guesses          map[string][]rune //Make sure to initialize it with make(map[string][]rune)
+	Word             string
 	// CurrentServer int
+}
+
+type TurnActionPoints struct {
+	Guess int
+	Skill int
 }
 
 type GameSettings struct {
@@ -74,9 +80,10 @@ func (lobby *Lobby) StartGame() (*Lobby, error) {
 
 func (lobby *Lobby) initializeRally() *Lobby {
 	lobby.Game.Rally = &Rally{
-		Word:    "Hello",
-		Guesses: make(map[string][]rune),
-		Turn:    lobby.Game.CurrentServer,
+		Word:             "Hello",
+		Guesses:          make(map[string][]rune),
+		Turn:             lobby.Game.CurrentServer,
+		TurnActionPoints: make(map[string]*TurnActionPoints),
 	}
 
 	for _, player := range lobby.Players {
@@ -93,6 +100,11 @@ func (lobby *Lobby) Guess(player Player, actionDetails ActionDetails) (*Lobby, e
 	}
 
 	for _, guessedLetter := range actionDetails.GuessedLetters {
+		// Check if player has guess actions
+		if lobby.Game.Rally.TurnActionPoints[player.ID].Guess <= 0 {
+			return nil, fmt.Errorf("Player has no guess actions")
+		}
+
 		// Get unguessed letter index and put them in an array
 		unguessedIndexes := []int{}
 		for i, _ := range lobby.Game.Rally.Guesses[player.ID] {
@@ -120,8 +132,24 @@ func (lobby *Lobby) Guess(player Player, actionDetails ActionDetails) (*Lobby, e
 		}
 
 		// If there's duplicate letters in a word, only reveal one
+
+		// Reduce guess action points
+		lobby.Game.Rally.TurnActionPoints[player.ID].Guess -= 1
 	}
 	return lobby, nil
+}
+
+func (lobby *Lobby) UseSkill(player Player, actionDetails ActionDetails) (*Lobby, error) {
+	if lobby.Game.State != StateInProgress {
+		return nil, fmt.Errorf("Game not in progress")
+	}
+	if lobby.Game.Rally.TurnActionPoints[player.ID].Skill <= 0 {
+		return nil, fmt.Errorf("Player has no skill actions")
+	}
+
+	// Switch and handle skills
+
+	lobby.Game.Rally.TurnActionPoints[player.ID].Skill -= 1
 }
 
 func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
@@ -138,11 +166,24 @@ func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
 			}
 		}
 
-		// Set cooldown for any skills used
-
 		lobby.Game.Rally.Turn = (lobby.Game.Rally.Turn + 1) % len(lobby.Players)
+
+		//Initialize next player
+		lobby.initializeNextPlayerTurn(lobby.Players[lobby.Game.Rally.Turn].ID)
 	}
 	return lobby, nil
+}
+
+func (lobby *Lobby) initializeNextPlayerTurn(nextTurnPlayerID string) *Lobby {
+	lobby.updatePlayerTurnActionPoints(nextTurnPlayerID, 1, 1)
+	return lobby
+}
+
+func (lobby *Lobby) updatePlayerTurnActionPoints(playerID string, guessActionPoints int, skillActionPoints int) *Lobby {
+	lobby.Game.Rally.TurnActionPoints[playerID] = &TurnActionPoints{
+		Guess: guessActionPoints,
+		Skill: skillActionPoints,
+	}
 }
 
 func isRuneArrayFilled(runes []rune) bool {

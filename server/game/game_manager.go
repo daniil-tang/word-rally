@@ -115,6 +115,11 @@ func (gm *GameManager) HandlePlayerAction(lobbyID string, player Player, action 
 		if err != nil {
 			return nil, err
 		}
+	case ActionUseSkill:
+		_, err := lobby.UseSkill(player, actionDetails)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return lobby, nil

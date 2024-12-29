@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y \
   git \
   && rm -rf /var/lib/apt/lists/*
 
+RUN npm install -g pnpm
+
 # Install AWS CLI if needed
 RUN curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
   && unzip awscliv2.zip \
