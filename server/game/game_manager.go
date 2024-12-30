@@ -59,9 +59,23 @@ func (gm *GameManager) JoinLobby(lobbyID string, player Player) (*Lobby, error) 
 		return nil, fmt.Errorf("Lobby is full.")
 	}
 
+	// Needs check whether player is already in a lobby
+
 	lobby.Players = append(lobby.Players, &player)
 
 	return lobby, nil
+}
+
+// Call this before join/create lobby
+func (gm *GameManager) GetLobbyByPlayer(player Player) (*Lobby, error) {
+	for _, lobby := range gm.lobbies {
+		for _, p := range lobby.Players {
+			if p.ID == player.ID {
+				return lobby, nil
+			}
+		}
+	}
+	return nil, nil
 }
 
 func (gm *GameManager) CreateGame(lobbyID string, player Player) (*Lobby, error) {

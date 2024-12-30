@@ -70,6 +70,8 @@ var upgrader = websocket.Upgrader{
 
 func HandleCreateLobby(gm *GameManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		if r.Method != http.MethodPost {
 			http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
 			return
@@ -102,6 +104,8 @@ func HandleCreateLobby(gm *GameManager) http.HandlerFunc {
 
 func HandleCreatePlayer() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		if r.Method != http.MethodPost {
 			http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
 			return
@@ -135,6 +139,8 @@ func HandleCreatePlayer() http.HandlerFunc {
 
 func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			log.Println("Could not open websocket connection", err)

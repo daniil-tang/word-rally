@@ -150,6 +150,8 @@ func (lobby *Lobby) UseSkill(player Player, actionDetails ActionDetails) (*Lobby
 	// Switch and handle skills
 
 	lobby.Game.Rally.TurnActionPoints[player.ID].Skill -= 1
+
+	return lobby, nil
 }
 
 func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
@@ -184,6 +186,7 @@ func (lobby *Lobby) updatePlayerTurnActionPoints(playerID string, guessActionPoi
 		Guess: guessActionPoints,
 		Skill: skillActionPoints,
 	}
+	return lobby
 }
 
 func isRuneArrayFilled(runes []rune) bool {

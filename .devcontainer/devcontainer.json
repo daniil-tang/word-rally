@@ -5,7 +5,8 @@
     "AmazonWebServices.amazon-q-vscode", // Add Amazon Q extension here
     "ms-vscode.go", // Go extension
     "dbaeumer.vscode-eslint", // For ESLint support in React
-    "esbenp.prettier-vscode" // For Prettier support
+    "esbenp.prettier-vscode", // For Prettier support
+    "svelte.svelte-vscode"
   ],
   // "postCreateCommand": "cd /frontend && npm install", // You can add any additional setup commands here
   "settings": {
