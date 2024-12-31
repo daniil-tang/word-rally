@@ -1,7 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import { player } from "$lib/store";
+  import { lobby, player } from "$lib/store";
+  import { createLobby, joinLobby } from "$lib/api";
 
   let lobbyId = "";
 
@@ -10,19 +11,32 @@
     if (!$player?.ID) goto("/");
   });
 
-  async function joinLobby() {
+  async function handleJoinLobby() {
     // TODO: Add API call to join lobby
     // For now, just navigate to the game page
-    await goto(`/game/${lobbyId}`);
+    await joinLobby(lobbyId, $player);
+  }
+
+  async function handleCreateLobby() {
+    await createLobby($player);
+    console.log("RES", $lobby);
   }
 </script>
 
-<div class="container">
-  <h1>Join a lobby</h1>
-  <div class="nes-field">
-    <input placeholder="Lobby ID" type="text" id="lobby_id" class="nes-input" bind:value={lobbyId} />
+<div class="inline-flex">
+  <div class="container">
+    <h1>Join a lobby</h1>
+    <div class="nes-field">
+      <input placeholder="Lobby ID" type="text" id="lobby_id" class="nes-input" bind:value={lobbyId} />
+    </div>
+    <button class="nes-btn is-primary" on:click={handleJoinLobby}>Join</button>
   </div>
-  <button class="nes-btn is-primary" on:click={joinLobby}>Join</button>
+
+  <div class="vertical-line"></div>
+
+  <div class="container flex-vertical-align">
+    <button class="nes-btn is-primary" on:click={handleCreateLobby}>Create Lobby</button>
+  </div>
 </div>
 
 <style>
@@ -50,5 +64,19 @@
 
   button {
     margin-top: 1rem;
+  }
+
+  .vertical-line {
+    border-left: 4px solid black;
+    /* height: 500px; */
+  }
+
+  .inline-flex {
+    display: inline-flex;
+  }
+
+  .flex-vertical-align {
+    display: flex;
+    align-items: center;
   }
 </style>

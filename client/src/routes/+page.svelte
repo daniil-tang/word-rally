@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import { player } from "$lib/store";
   import type { Player } from "$lib/types";
+  import { createPlayer } from "$lib/api";
 
   // let player = { Name: "" };
   let isNewPlayer = true;
@@ -19,12 +20,8 @@
   });
 
   async function savePlayer() {
-    console.log("SAVE PLAYER");
-    let res = await fetch("http://localhost:8080/createplayer", { method: "POST", body: JSON.stringify(_player) });
-    let p = await res.json();
-    console.log("PPP", p);
-    localStorage.setItem("word-rally-player-test", JSON.stringify(p));
-    player.set(p);
+    await createPlayer(_player);
+    localStorage.setItem("word-rally-player-test", JSON.stringify($player));
   }
 
   async function handleSubmit() {

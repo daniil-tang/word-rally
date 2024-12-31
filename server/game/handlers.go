@@ -15,7 +15,16 @@ const (
 	ActionUseSkill PlayerAction = "useskill"
 )
 
+const (
+	GameResponseLobby string = "lobby"
+)
+
 type GameMessage struct {
+	Event string `json:"event"`
+	Data  string `json:"data"`
+}
+
+type GameResponse struct {
 	Event string `json:"event"`
 	Data  string `json:"data"`
 }
@@ -169,7 +178,14 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					continue
 				}
 				// Needs propagating the updated lobby to other players
-				err = conn.WriteJSON(lobby)
+				// err = conn.WriteJSON(lobby)
+
+				encodedMsg, err := lobby.getEncodedLobbyWSResponse()
+				if err != nil {
+					log.Println("Error encoding message", err)
+					continue // Exit if writing fails
+				}
+				err = conn.WriteMessage(websocket.TextMessage, encodedMsg)
 				if err != nil {
 					log.Println("Error sending lobby back to client", err)
 					continue // Exit if writing fails
@@ -189,7 +205,12 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					log.Println("Error creating game", err)
 					continue
 				}
-				err = conn.WriteJSON(lobby)
+				encodedMsg, err := lobby.getEncodedLobbyWSResponse()
+				if err != nil {
+					log.Println("Error encoding message", err)
+					continue // Exit if writing fails
+				}
+				err = conn.WriteMessage(websocket.TextMessage, encodedMsg)
 				if err != nil {
 					log.Println("Error sending lobby back to client", err)
 					continue
@@ -206,7 +227,12 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					log.Println("Error starting game", err)
 					continue
 				}
-				err = conn.WriteJSON(lobby)
+				encodedMsg, err := lobby.getEncodedLobbyWSResponse()
+				if err != nil {
+					log.Println("Error encoding message", err)
+					continue // Exit if writing fails
+				}
+				err = conn.WriteMessage(websocket.TextMessage, encodedMsg)
 				if err != nil {
 					log.Println("Error sending lobby back to client", err)
 					continue
@@ -226,7 +252,12 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					continue
 				}
 
-				err = conn.WriteJSON(lobby)
+				encodedMsg, err := lobby.getEncodedLobbyWSResponse()
+				if err != nil {
+					log.Println("Error encoding message", err)
+					continue // Exit if writing fails
+				}
+				err = conn.WriteMessage(websocket.TextMessage, encodedMsg)
 				if err != nil {
 					log.Println("Error sending lobby back to client", err)
 					continue
@@ -244,7 +275,12 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					continue
 				}
 
-				err = conn.WriteJSON(lobby)
+				encodedMsg, err := lobby.getEncodedLobbyWSResponse()
+				if err != nil {
+					log.Println("Error encoding message", err)
+					continue // Exit if writing fails
+				}
+				err = conn.WriteMessage(websocket.TextMessage, encodedMsg)
 				if err != nil {
 					log.Println("Error sending lobby back to client", err)
 					continue
@@ -252,4 +288,32 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 			}
 		}
 	}
+}
+
+func getEncodedWSResponse(event string, data string) ([]byte, error) {
+	resp := &GameResponse{
+		Event: event,
+		Data:  data,
+	}
+	encodedResp, err := json.Marshal(resp)
+	if err != nil {
+		log.Println("Error encoding message:", err)
+		return nil, err
+	}
+	return encodedResp, nil
+}
+
+func (lobby *Lobby) getEncodedLobbyWSResponse() ([]byte, error) {
+	lobbyMarshaled, err := json.Marshal(lobby)
+	if err != nil {
+		log.Println("Error marshaling lobby:", err)
+		return nil, err
+	}
+	encodedResp, err := getEncodedWSResponse(GameResponseLobby, string(lobbyMarshaled))
+	if err != nil {
+		log.Println("Error encoding lobby message:", err)
+		return nil, err
+	}
+
+	return encodedResp, nil
 }
