@@ -9,6 +9,7 @@ export type GameState = "waiting" | "inprogress" | "finished";
 
 export interface PlayerSettings {
   Stance: StanceType;
+  Ready: boolean;
 }
 
 export interface GameSettings {}
@@ -35,11 +36,6 @@ export interface Game {
   PlayerCooldowns: { [playerId: string]: { [action: string]: number } };
 }
 
-export interface Player {
-  ID: string;
-  Name: string;
-}
-
 export interface Lobby {
   ID: string;
   Players: Player[];
@@ -49,8 +45,19 @@ export interface Lobby {
   PlayerSettings: { [playerId: string]: PlayerSettings };
 }
 
-export type WebSocketMessage = {
+export type WebSocketIncomingMessage = {
   //Why is this lowercase?
   event: string;
   data: string;
+};
+
+export type WebSocketOutgoingMessage = {
+  //Why is this lowercase?
+  Event: string;
+  Data: string;
+};
+
+export type Stance = {
+  id: string;
+  name: string;
 };

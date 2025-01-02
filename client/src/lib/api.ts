@@ -1,5 +1,5 @@
 import { lobby, player } from "./store";
-import type { Player, WebSocketMessage } from "./types";
+import type { Player, PlayerSettings, WebSocketIncomingMessage, WebSocketOutgoingMessage } from "./types";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -10,7 +10,7 @@ socket.addEventListener("open", function (event) {
 });
 
 socket.addEventListener("message", function (event) {
-  let eventData: WebSocketMessage = JSON.parse(event.data);
+  let eventData: WebSocketIncomingMessage = JSON.parse(event.data);
   console.log("EVENT DATA", eventData, eventData.event);
   switch (eventData.event) {
     case "lobby":
@@ -20,7 +20,7 @@ socket.addEventListener("message", function (event) {
   }
 });
 
-const sendMessage = (message: WebSocketMessage) => {
+const sendMessage = (message: WebSocketOutgoingMessage) => {
   if (socket.readyState <= 1) {
     socket.send(JSON.stringify(message));
   }
@@ -49,4 +49,21 @@ export async function joinLobby(lobbyID: string, p: Player) {
       player: p,
     }),
   });
+}
+
+export async function updatePlayerSettings(lobbyID: string, p: Player, playerSettings: PlayerSettings) {
+  sendMessage({
+    Event: "updateplayersettings",
+    Data: JSON.stringify({
+      lobbyID,
+      player: p,
+      playerSettings,
+    }),
+  });
+}
+
+export async function getPlayerLobby(p: Player) {
+  let response = await fetch(`${BASE_URL}/getlobby?playerID=${p.ID}`);
+  let lobbyResponse = await response.json();
+  lobby.set(lobbyResponse);
 }

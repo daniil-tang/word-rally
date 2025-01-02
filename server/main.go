@@ -15,6 +15,7 @@ func main() {
 	http.HandleFunc("/createlobby", game.HandleCreateLobby(gameManager))
 	// http.HandleFunc("/joinlobby", game.HandleJoinLobby(gameManager))
 	http.HandleFunc("/createplayer", game.HandleCreatePlayer())
+	http.HandleFunc("/getlobby", game.HandleGetLobby(gameManager))
 
 	log.Println("Server is running on http://localhost:8080")
 

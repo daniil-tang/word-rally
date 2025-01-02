@@ -15,6 +15,7 @@ type Lobby struct {
 
 type PlayerSettings struct {
 	Stance StanceType
+	Ready  bool
 }
 
 // Create lobby
@@ -27,6 +28,12 @@ func NewLobby(lobbyID string, hostPlayer Player) *Lobby {
 		Host:           hostPlayer.ID, //Use the username of the person who joined(or maybe user id)
 		MaxPlayers:     2,             // Always set to 2 as required
 		PlayerSettings: make(map[string]*PlayerSettings),
+	}
+
+	// Initialize host player lobby settings
+	lobby.PlayerSettings[hostPlayer.ID] = &PlayerSettings{
+		Stance: StanceTennis,
+		Ready:  false,
 	}
 
 	// Seems like have to append, can't assign directly to the lobby

@@ -111,6 +111,34 @@ func HandleCreateLobby(gm *GameManager) http.HandlerFunc {
 	}
 }
 
+func HandleGetLobby(gm *GameManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method != http.MethodGet {
+			http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
+			return
+		}
+
+		playerID := r.URL.Query().Get("playerID")
+		if playerID == "" {
+			http.Error(w, "Player ID is empty.", http.StatusBadRequest)
+		}
+
+		lobby, err := gm.GetLobbyByPlayer(playerID)
+		if err != nil {
+			http.Error(w, "Error retrieving lobby", http.StatusInternalServerError)
+		}
+		lobbyJson, err := json.Marshal(lobby)
+		if err != nil {
+			http.Error(w, "Falied to marshal lobby", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write(lobbyJson)
+	}
+}
+
 func HandleCreatePlayer() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
