@@ -4,9 +4,13 @@ import type { Player, PlayerSettings, WebSocketIncomingMessage, WebSocketOutgoin
 const BASE_URL = "http://localhost:8080";
 
 const socket = new WebSocket("ws://localhost:8080/ws");
-
+console.log("SOCKET ME");
 socket.addEventListener("open", function (event) {
   console.log("WebSocket open.");
+});
+
+socket.addEventListener("close", function (event) {
+  console.log("WebSocket close.");
 });
 
 socket.addEventListener("message", function (event) {
@@ -14,6 +18,7 @@ socket.addEventListener("message", function (event) {
   console.log("EVENT DATA", eventData, eventData.event);
   switch (eventData.event) {
     case "lobby":
+      console.log("WHATCHAMACALIT", JSON.parse(eventData.data));
       lobby.set(JSON.parse(eventData.data));
       break;
     // Should add an error case: Or default = error
@@ -41,6 +46,15 @@ export async function createLobby(hostPlayer: Player) {
   lobby.set(lobbyResponse);
 }
 
+export async function registerConnection(p: Player) {
+  sendMessage({
+    Event: "registerconnection",
+    Data: JSON.stringify({
+      player: p,
+    }),
+  });
+}
+
 export async function joinLobby(lobbyID: string, p: Player) {
   sendMessage({
     Event: "joinlobby",
@@ -58,6 +72,27 @@ export async function updatePlayerSettings(lobbyID: string, p: Player, playerSet
       lobbyID,
       player: p,
       playerSettings,
+    }),
+  });
+}
+
+// Create this on lobby mount..?
+export async function createGame(lobbyID: string, p: Player) {
+  sendMessage({
+    Event: "creategame",
+    Data: JSON.stringify({
+      lobbyID,
+      player: p,
+    }),
+  });
+}
+
+export async function startGame(lobbyID: string, p: Player) {
+  sendMessage({
+    Event: "startgame",
+    Data: JSON.stringify({
+      lobbyID,
+      player: p,
     }),
   });
 }

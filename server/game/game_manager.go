@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"sync"
+
+	"github.com/gorilla/websocket"
 )
 
 func generateLobbyID() string {
@@ -16,13 +18,16 @@ func generateLobbyID() string {
 }
 
 type GameManager struct {
-	lobbies map[string]*Lobby
-	mutex   sync.Mutex
+	lobbies     map[string]*Lobby
+	mutex       sync.Mutex
+	connections map[string]*websocket.Conn
+	connMutex   sync.Mutex
 }
 
 func NewGameManager() *GameManager {
 	return &GameManager{
-		lobbies: make(map[string]*Lobby),
+		lobbies:     make(map[string]*Lobby),
+		connections: make(map[string]*websocket.Conn),
 	}
 }
 
@@ -153,4 +158,21 @@ func (gm *GameManager) UpdatePlayerSettings(lobbyID string, player Player, setti
 	lobby.UpdatePlayerSettings(player.ID, settings)
 
 	return lobby, nil
+}
+
+func (gm *GameManager) AddConnection(playerID string, connection *websocket.Conn) {
+	gm.connMutex.Lock()
+	defer gm.connMutex.Unlock()
+
+	gm.connections[playerID] = connection
+}
+
+func (gm *GameManager) GetLobbyConnections(lobbyID string) []*websocket.Conn {
+	var lobbyConnections []*websocket.Conn
+
+	for _, p := range gm.lobbies[lobbyID].Players {
+		lobbyConnections = append(lobbyConnections, gm.connections[p.ID])
+	}
+
+	return lobbyConnections
 }

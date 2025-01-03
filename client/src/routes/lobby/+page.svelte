@@ -6,22 +6,28 @@
 
   let lobbyId = "";
 
-  onMount(() => {
+  // onMount(() => {
+  //   if (!$player?.ID) goto("/");
+  //   if ($lobby) goto(`/lobby/${$lobby.ID}`);
+  // });
+
+  $: {
     if (!$player?.ID) goto("/");
     if ($lobby) goto(`/lobby/${$lobby.ID}`);
-  });
+  }
 
   async function handleJoinLobby() {
     // TODO: Add API call to join lobby
     // For now, just navigate to the game page
     await joinLobby(lobbyId, $player);
-    if ($lobby) goto(`/lobby/${$lobby.ID}`);
+    // console.log("JOIN LOBBY?", $lobby);
+    // if ($lobby) goto(`/lobby/${$lobby.ID}`);
   }
 
   async function handleCreateLobby() {
     await createLobby($player);
-    console.log("RES", $lobby);
-    if ($lobby) goto(`/lobby/${$lobby.ID}`);
+    // console.log("RES", $lobby);
+    // if ($lobby) goto(`/lobby/${$lobby.ID}`);
   }
 </script>
 
