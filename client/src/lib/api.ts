@@ -1,33 +1,46 @@
-import { lobby, player } from "./store";
+import { get } from "svelte/store";
+import { lobby, player, websocket } from "./store";
 import type { Player, PlayerSettings, WebSocketIncomingMessage, WebSocketOutgoingMessage } from "./types";
 
 const BASE_URL = "http://localhost:8080";
 
-const socket = new WebSocket("ws://localhost:8080/ws");
-console.log("SOCKET ME");
-socket.addEventListener("open", function (event) {
-  console.log("WebSocket open.");
-});
+export async function initWS() {
+  const socket = new WebSocket("ws://localhost:8080/ws");
+  socket.addEventListener("open", function (event) {
+    console.log("WebSocket open.");
+    websocket.set(socket);
+  });
 
-socket.addEventListener("close", function (event) {
-  console.log("WebSocket close.");
-});
+  socket.addEventListener("close", function (event) {
+    console.log("WebSocket close.");
+    reconnect();
+  });
 
-socket.addEventListener("message", function (event) {
-  let eventData: WebSocketIncomingMessage = JSON.parse(event.data);
-  console.log("EVENT DATA", eventData, eventData.event);
-  switch (eventData.event) {
-    case "lobby":
-      console.log("WHATCHAMACALIT", JSON.parse(eventData.data));
-      lobby.set(JSON.parse(eventData.data));
-      break;
-    // Should add an error case: Or default = error
-  }
-});
+  socket.addEventListener("message", function (event) {
+    let eventData: WebSocketIncomingMessage = JSON.parse(event.data);
+    console.log("EVENT DATA", eventData, eventData.event);
+    switch (eventData.event) {
+      case "lobby":
+        lobby.set(JSON.parse(eventData.data));
+        break;
+      // Should add an error case: Or default = error
+    }
+  });
+}
+
+function reconnect() {
+  setTimeout(() => {
+    console.log("Reconnecting to WebSocket...");
+    initWS(); // Try to reinitialize the WebSocket connection
+  }, 1000); // Reconnect after 1 second
+}
 
 const sendMessage = (message: WebSocketOutgoingMessage) => {
-  if (socket.readyState <= 1) {
-    socket.send(JSON.stringify(message));
+  const ws = get(websocket);
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(message));
+  } else {
+    console.warn("WebSocket is not open, cannot send message.");
   }
 };
 
@@ -43,6 +56,7 @@ export async function createLobby(hostPlayer: Player) {
     body: JSON.stringify(hostPlayer),
   });
   let lobbyResponse = await response.json();
+  console.log("RESPONSI", lobbyResponse);
   lobby.set(lobbyResponse);
 }
 
@@ -93,6 +107,21 @@ export async function startGame(lobbyID: string, p: Player) {
     Data: JSON.stringify({
       lobbyID,
       player: p,
+    }),
+  });
+}
+
+export async function guess(lobbyID: string, p: Player, guess: string) {
+  console.log("SEND MSG");
+  sendMessage({
+    Event: "playeraction",
+    Data: JSON.stringify({
+      lobbyID,
+      player: p,
+      action: "guess",
+      actionDetails: {
+        guessedLetters: [guess.charCodeAt(0)],
+      },
     }),
   });
 }

@@ -5,13 +5,11 @@
   import type { Player } from "$lib/types";
   import { createPlayer, registerConnection } from "$lib/api";
 
-  // let player = { Name: "" };
   let isNewPlayer = true;
   let _player: Player = { Name: "", ID: "" };
 
   onMount(async () => {
     let storedPlayer = JSON.parse(localStorage.getItem("word-rally-player-test") ?? "{}");
-    console.log("STORED PLAYER", storedPlayer);
     if (storedPlayer?.ID) {
       _player = storedPlayer;
       await savePlayer();
@@ -26,8 +24,6 @@
   }
 
   async function handleSubmit() {
-    // In reality, make a call to the GO backend
-    console.log("SUBMIT");
     await savePlayer();
     isNewPlayer = false;
 

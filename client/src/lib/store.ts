@@ -4,3 +4,5 @@ import type { Player, Lobby } from "./types";
 export const player = writable<Player>();
 
 export const lobby = writable<Lobby>();
+
+export const websocket = writable<WebSocket | null>(null);

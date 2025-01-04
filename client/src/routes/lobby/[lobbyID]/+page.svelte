@@ -1,43 +1,48 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { updatePlayerSettings } from "$lib/api";
-  import { STANCES } from "$lib/constants";
+  import { createGame, startGame, updatePlayerSettings } from "$lib/api";
+  import { GAME_STATE, STANCES } from "$lib/constants";
   import { player, lobby } from "$lib/store";
   import { onMount } from "svelte";
-  import { get } from "svelte/store";
 
-  // Refactor to fetch lobby stuff on every load
   $: selectedStance = $lobby.PlayerSettings[$player.ID].Stance;
-  let playerReady = $lobby.PlayerSettings[$player.ID].Ready;
-
-  $: {
-    let _lobby = get(lobby);
-    let _player = get(player);
-    if (selectedStance != _lobby.PlayerSettings[_player.ID].Stance) {
-      console.log("SEND UPDATES", {
-        ..._lobby.PlayerSettings[_player.ID],
-        Stance: selectedStance,
-      });
-      updatePlayerSettings(_lobby.ID, _player, {
-        ..._lobby.PlayerSettings[_player.ID],
-        Stance: selectedStance,
-      });
-    }
-  }
+  // $: playerReady = $lobby?.PlayerSettings[$player.ID].Ready;
 
   $: {
     if (!$player?.ID) goto("/");
-    if (!$lobby?.ID) goto(`/`);
+    if (!$lobby) goto(`/lobby`);
+    // Goto game screen
+    if ($lobby?.Game?.State == GAME_STATE.IN_PROGRESS) goto(`/lobby/${$lobby.ID}/game/${$lobby.Game.ID}`);
+    if ($lobby?.Game?.State == GAME_STATE.FINISHED) goto(`/`); // Prolly don't need this..?
   }
+
+  $: {
+    if (selectedStance) {
+      const _lobby = $lobby;
+      const _player = $player;
+
+      const currentStance = _lobby.PlayerSettings[_player.ID].Stance;
+      if (selectedStance !== currentStance) {
+        updatePlayerSettings(_lobby.ID, _player, {
+          ..._lobby.PlayerSettings[_player.ID],
+          Stance: selectedStance,
+        });
+      }
+    }
+  }
+
   $: opponent = $lobby.Players.find((p) => p.ID != $player.ID);
 
   onMount(() => {
     // If there's no game create one
     // If there's a game go to game (Handle in reactive?)
     // Handle all game states here
+    createGame($lobby.ID, $player);
   });
 
-  function handleStartGame() {}
+  function handleStartGame() {
+    startGame($lobby.ID, $player);
+  }
 </script>
 
 <div>

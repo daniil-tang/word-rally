@@ -18,3 +18,9 @@ export const STANCES: Stance[] = [
     name: "Football",
   },
 ];
+
+export const GAME_STATE = {
+  WAITING: "waiting",
+  IN_PROGRESS: "inprogress",
+  FINISHED: "finished",
+};
