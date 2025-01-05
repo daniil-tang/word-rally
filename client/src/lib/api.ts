@@ -112,7 +112,7 @@ export async function startGame(lobbyID: string, p: Player) {
 }
 
 export async function guess(lobbyID: string, p: Player, guess: string) {
-  console.log("SEND MSG");
+  console.log("GUESS", guess.toUpperCase().charCodeAt(0));
   sendMessage({
     Event: "playeraction",
     Data: JSON.stringify({
@@ -120,8 +120,20 @@ export async function guess(lobbyID: string, p: Player, guess: string) {
       player: p,
       action: "guess",
       actionDetails: {
-        guessedLetters: [guess.charCodeAt(0)],
+        guessedLetters: [guess.toUpperCase().charCodeAt(0)],
       },
+    }),
+  });
+}
+
+export async function endTurn(lobbyID: string, p: Player) {
+  sendMessage({
+    Event: "playeraction",
+    Data: JSON.stringify({
+      lobbyID,
+      player: p,
+      action: "endturn",
+      actionDetails: {},
     }),
   });
 }

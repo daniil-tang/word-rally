@@ -13,6 +13,7 @@ type PlayerAction string
 const (
 	ActionGuess    PlayerAction = "guess"
 	ActionUseSkill PlayerAction = "useskill"
+	ActionEndTurn  PlayerAction = "endturn"
 )
 
 const (

@@ -22,7 +22,7 @@ export interface TurnActionPoints {
 export interface Rally {
   Turn: number;
   TurnActionPoints: { [playerId: string]: TurnActionPoints };
-  Guesses: { [playerId: string]: string[] };
+  Guesses: { [playerId: string]: number[] };
   Word: string;
 }
 

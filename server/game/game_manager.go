@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 
@@ -131,7 +132,7 @@ func (gm *GameManager) HandlePlayerAction(lobbyID string, player Player, action 
 	}
 
 	lobby := gm.lobbies[lobbyID]
-
+	log.Printf("ACTION %s", action)
 	switch action {
 	case ActionGuess:
 		_, err := lobby.Guess(player, actionDetails)
@@ -140,6 +141,11 @@ func (gm *GameManager) HandlePlayerAction(lobbyID string, player Player, action 
 		}
 	case ActionUseSkill:
 		_, err := lobby.UseSkill(player, actionDetails)
+		if err != nil {
+			return nil, err
+		}
+	case ActionEndTurn:
+		_, err := lobby.EndTurn(player)
 		if err != nil {
 			return nil, err
 		}

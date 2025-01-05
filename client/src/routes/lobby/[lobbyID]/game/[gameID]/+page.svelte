@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { guess } from "$lib/api";
+  import { endTurn, guess } from "$lib/api";
   import { lobby, player } from "$lib/store";
 
   $: opponent = $lobby.Players.find((p) => p.ID != $player.ID) ?? { ID: "", Name: "" }; //Hacky
@@ -15,10 +15,9 @@
     const _playerGuessData = _lobby.Game?.Rally?.Guesses[_player.ID] ?? [];
     const _opponentGuessData = _lobby.Game?.Rally?.Guesses[opponent.ID] ?? [];
     if (word) {
-      for (const [index, char] of [...word].entries()) {
-        playerGuesses[index] = _playerGuessData[index] == char;
-        opponentGuesses[index] = _opponentGuessData[index] == char;
-      }
+      // Create new arrays to trigger reactivity
+      playerGuesses = [...word].map((char, index) => _playerGuessData[index] === char.charCodeAt(0));
+      opponentGuesses = [...word].map((char, index) => _opponentGuessData[index] === char.charCodeAt(0));
     }
   }
 
@@ -26,7 +25,9 @@
     await guess($lobby.ID, $player, guessValue);
   }
 
-  function endTurn() {}
+  function handleEndTurn() {
+    endTurn($lobby.ID, $player);
+  }
 </script>
 
 <div>
@@ -37,12 +38,16 @@
         <p class="title">{$player.Name}'s Board</p>
         <div class="guess-container">
           {#each playerGuesses as playerGuess}
-            <div class={`guess-box ${playerGuess ?? "correct-guess"}`}></div>
+            <div class={`guess-box ${playerGuess ? "correct-guess" : ""}`}></div>
           {/each}
         </div>
       </div>
       <div class="nes-container with-title player-action">
         <p class="title">{$player.Name}'s Actions</p>
+        <div class="action-points-container">
+          <span>Guess Points: {$lobby.Game?.Rally?.TurnActionPoints[$player?.ID]?.Guess}</span>
+          <span>Skill Points: {$lobby.Game?.Rally?.TurnActionPoints[$player?.ID]?.Skill}</span>
+        </div>
       </div>
     </div>
 
@@ -58,10 +63,13 @@
             maxlength="1"
             class="nes-input player-guess-input"
           />
-          <button class={`nes-btn guess-button ${guessValue ? "" : "is-disabled"}`} on:click={handleGuess}>Guess</button
+          <button
+            class={`nes-btn guess-button ${guessValue ? "" : "is-disabled"}`}
+            on:click={handleGuess}
+            disabled={!guessValue}>Guess</button
           >
         </div>
-        <button class="nes-btn end-turn-button">End Turn</button>
+        <button class="nes-btn end-turn-button" on:click={handleEndTurn}>End Turn</button>
       {:else}
         <h4>{opponent.Name}'s turn</h4>
       {/if}
@@ -72,13 +80,17 @@
         <p class="title">{opponent?.Name}'s Board</p>
         <div class="guess-container">
           {#each opponentGuesses as opponentGuess}
-            <div class={`guess-box ${opponentGuess ?? "correct-guess"}`}></div>
+            <div class={`guess-box ${opponentGuess ? "correct-guess" : ""}`}></div>
           {/each}
         </div>
       </div>
 
       <div class="nes-container with-title player-action">
         <p class="title">{opponent?.Name}'s Actions</p>
+        <div class="action-points-container">
+          <span>Guess Points: {$lobby.Game?.Rally?.TurnActionPoints[opponent?.ID]?.Guess}</span>
+          <span>Skill Points: {$lobby.Game?.Rally?.TurnActionPoints[opponent?.ID]?.Skill}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -125,6 +137,10 @@
     text-transform: uppercase;
   }
 
+  .correct-guess {
+    background-color: green;
+  }
+
   .guess-form {
     display: inline;
   }
@@ -145,5 +161,12 @@
     margin-top: 100px;
     display: block;
     width: 100%;
+  }
+
+  .action-points-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    font-size: 0.6rem;
   }
 </style>

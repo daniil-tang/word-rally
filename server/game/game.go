@@ -2,7 +2,7 @@ package game
 
 import (
 	"fmt"
-	"math/rand"
+	"log"
 
 	"github.com/google/uuid"
 )
@@ -67,7 +67,7 @@ func (lobby *Lobby) StartGame() (*Lobby, error) {
 	}
 
 	//Get server
-	serverIndex := rand.Intn(len(lobby.Players))
+	serverIndex := 0 //rand.Intn(len(lobby.Players))
 	lobby.Game.CurrentServer = serverIndex
 
 	// Initialize rally
@@ -80,7 +80,7 @@ func (lobby *Lobby) StartGame() (*Lobby, error) {
 
 func (lobby *Lobby) initializeRally() *Lobby {
 	lobby.Game.Rally = &Rally{
-		Word:             "Hello",
+		Word:             "HELLO",
 		Guesses:          make(map[string][]rune),
 		Turn:             lobby.Game.CurrentServer,
 		TurnActionPoints: make(map[string]*TurnActionPoints),
@@ -88,7 +88,10 @@ func (lobby *Lobby) initializeRally() *Lobby {
 
 	for _, player := range lobby.Players {
 		lobby.Game.Rally.Guesses[player.ID] = make([]rune, len(lobby.Game.Rally.Word))
+		lobby.updatePlayerTurnActionPoints(player.ID, 0, 0)
 	}
+
+	lobby.initializeNextPlayerTurn(lobby.Players[lobby.Game.CurrentServer].ID)
 
 	return lobby
 }
@@ -155,6 +158,7 @@ func (lobby *Lobby) UseSkill(player Player, actionDetails ActionDetails) (*Lobby
 }
 
 func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
+	log.Printf("END TURN")
 	if isRuneArrayFilled(lobby.Game.Rally.Guesses[player.ID]) {
 		// Player wins the rally
 		lobby.incrementScore(player.ID)
