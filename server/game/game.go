@@ -162,6 +162,8 @@ func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
 	if isRuneArrayFilled(lobby.Game.Rally.Guesses[player.ID]) {
 		// Player wins the rally
 		lobby.incrementScore(player.ID)
+
+		// Check if player wins the gamee
 	} else {
 		// If the guess failed....return something else?
 

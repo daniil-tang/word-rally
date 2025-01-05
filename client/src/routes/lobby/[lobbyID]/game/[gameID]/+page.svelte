@@ -1,13 +1,22 @@
 <script lang="ts">
-  import { endTurn, guess } from "$lib/api";
+  import { goto } from "$app/navigation";
+  import { createGame, endTurn, guess } from "$lib/api";
+  import { GAME_STATE } from "$lib/constants";
   import { lobby, player } from "$lib/store";
+
+  $: {
+    if (!$player?.ID) goto("/");
+    if (!$lobby) goto(`/lobby`);
+    // Goto game screen
+    if ($lobby?.Game?.State == GAME_STATE.WAITING) goto(`/lobby/${$lobby.ID}`);
+  }
 
   $: opponent = $lobby.Players.find((p) => p.ID != $player.ID) ?? { ID: "", Name: "" }; //Hacky
 
   let guessValue = "";
   let playerGuesses: Boolean[] = [];
   let opponentGuesses: Boolean[] = [];
-
+  let endGameDialog: HTMLDialogElement | null = null;
   $: {
     const _lobby = $lobby;
     const _player = $player;
@@ -19,6 +28,11 @@
       playerGuesses = [...word].map((char, index) => _playerGuessData[index] === char.charCodeAt(0));
       opponentGuesses = [...word].map((char, index) => _opponentGuessData[index] === char.charCodeAt(0));
     }
+    if (_lobby.Game?.State == GAME_STATE.FINISHED) {
+      if (endGameDialog) {
+        endGameDialog.showModal();
+      }
+    }
   }
 
   async function handleGuess() {
@@ -28,10 +42,37 @@
   function handleEndTurn() {
     endTurn($lobby.ID, $player);
   }
+
+  async function handleReturnToLobby() {
+    await createGame($lobby.ID, $player);
+  }
 </script>
 
 <div>
-  <div></div>
+  <dialog class="nes-dialog end-game-dialog" id="end-game-dialog" bind:this={endGameDialog}>
+    <form method="dialog">
+      <menu class="dialog-menu end-game-dialog-menu">
+        <h1>
+          {#if $lobby?.Game?.Score[$player.ID] == 3}
+            You Win! :D
+          {:else}
+            {"You Lose :("}
+          {/if}
+        </h1>
+        {#if $player.ID == $lobby?.Host}
+          <button class="nes-btn is-primary back-to-lobby-button" on:click={handleReturnToLobby}>Return to Lobby</button
+          >
+        {:else}
+          <p>Waiting for host to return you to lobby</p>
+        {/if}
+      </menu>
+    </form>
+  </dialog>
+  <div class="score-container">
+    <div>{$player.Name}: {$lobby.Game?.Score[$player.ID]}</div>
+    <div>First to 3</div>
+    <div>{opponent.Name}: {$lobby.Game?.Score[opponent.ID]}</div>
+  </div>
   <div class="grid-container">
     <div class="player-container">
       <div class="nes-container with-title player-board">
@@ -97,6 +138,11 @@
 </div>
 
 <style>
+  .score-container {
+    display: flex;
+    justify-content: space-between;
+  }
+
   .grid-container {
     display: inline-grid;
     grid-template-columns: 1fr max-content 1fr;
@@ -169,4 +215,21 @@
     justify-content: space-between;
     font-size: 0.6rem;
   }
+
+  .end-game-dialog {
+    width: 600px;
+    height: 400px;
+    text-align: center;
+  }
+
+  .end-game-dialog-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* .back-to-lobby-button {
+    align-self: flex-end;
+  } */
 </style>
