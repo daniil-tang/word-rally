@@ -138,6 +138,20 @@ export async function endTurn(lobbyID: string, p: Player) {
   });
 }
 
+export async function useSkill(lobbyID: string, p: Player, skillId: string) {
+  sendMessage({
+    Event: "playeraction",
+    Data: JSON.stringify({
+      lobbyID,
+      player: p,
+      action: "useskill",
+      actionDetails: {
+        skillUsed: skillId,
+      },
+    }),
+  });
+}
+
 export async function getPlayerLobby(p: Player) {
   let response = await fetch(`${BASE_URL}/getlobby?playerID=${p.ID}`);
   let lobbyResponse = await response.json();

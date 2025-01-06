@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { createGame, endTurn, guess } from "$lib/api";
-  import { GAME_STATE } from "$lib/constants";
+  import { GAME_STATE, STANCE_DATA } from "$lib/constants";
   import { lobby, player } from "$lib/store";
 
   $: {
@@ -46,6 +46,8 @@
   async function handleReturnToLobby() {
     await createGame($lobby.ID, $player);
   }
+
+  async function handleSkillClick(skillId: string) {}
 </script>
 
 <div>
@@ -88,6 +90,12 @@
         <div class="action-points-container">
           <span>Guess Points: {$lobby.Game?.Rally?.TurnActionPoints[$player?.ID]?.Guess}</span>
           <span>Skill Points: {$lobby.Game?.Rally?.TurnActionPoints[$player?.ID]?.Skill}</span>
+        </div>
+        <div class="skills-container">
+          {#each STANCE_DATA[$lobby.PlayerSettings[$player.ID].Stance].skills as stanceData}
+            <!--Disable button if on cooldown  -->
+            <button on:click={() => handleSkillClick(stanceData.id)} class="nes-btn">{stanceData.name}</button>
+          {/each}
         </div>
       </div>
     </div>

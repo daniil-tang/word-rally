@@ -61,3 +61,12 @@ export type Stance = {
   id: string;
   name: string;
 };
+
+export type StanceData = {
+  [key: string]: {
+    skills: {
+      id: string;
+      name: string;
+    }[];
+  };
+};

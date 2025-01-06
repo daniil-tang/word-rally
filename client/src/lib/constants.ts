@@ -2,7 +2,7 @@
 //   ['joinlobby', { type: 'joinlobby', payload: 'Hello World' }],
 // ]);
 
-import type { Stance } from "./types";
+import type { Stance, StanceData } from "./types";
 
 export const STANCES: Stance[] = [
   {
@@ -23,4 +23,31 @@ export const GAME_STATE = {
   WAITING: "waiting",
   IN_PROGRESS: "inprogress",
   FINISHED: "finished",
+};
+
+export const STANCE_DATA: StanceData = {
+  tennis: {
+    skills: [
+      {
+        id: "",
+        name: "",
+      },
+    ],
+  },
+  volleyball: {
+    skills: [
+      {
+        id: "",
+        name: "",
+      },
+    ],
+  },
+  football: {
+    skills: [
+      {
+        id: "",
+        name: "",
+      },
+    ],
+  },
 };

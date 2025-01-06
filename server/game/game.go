@@ -42,6 +42,8 @@ type GameSettings struct {
 	// Points and timer maybe
 }
 
+var WordList = []string{"HELLO", "GOODBYE"}
+
 func (lobby *Lobby) CreateNewGame() *Lobby {
 	lobby.Game = &Game{
 		ID:              uuid.NewString(),
@@ -80,7 +82,7 @@ func (lobby *Lobby) StartGame() (*Lobby, error) {
 
 func (lobby *Lobby) initializeRally() *Lobby {
 	lobby.Game.Rally = &Rally{
-		Word:             "HELLO",
+		Word:             "A",
 		Guesses:          make(map[string][]rune),
 		Turn:             lobby.Game.CurrentServer,
 		TurnActionPoints: make(map[string]*TurnActionPoints),
@@ -151,6 +153,17 @@ func (lobby *Lobby) UseSkill(player Player, actionDetails ActionDetails) (*Lobby
 	}
 
 	// Switch and handle skills
+	var stance Stance
+	switch lobby.PlayerSettings[player.ID].Stance {
+	case StanceTennis:
+		stance = NewTennisStance()
+	case StanceVolleyball:
+		stance = NewVolleyballStance()
+	case StanceFootball:
+		stance = NewFootballStance()
+	}
+
+	stance.UseSkill(actionDetails.SkillUsed)
 
 	lobby.Game.Rally.TurnActionPoints[player.ID].Skill -= 1
 

@@ -64,7 +64,7 @@ type PlayerActionRequest struct {
 
 type ActionDetails struct {
 	GuessedLetters []rune `json:"guessedLetters,omitempty"` // List of guessed letters (if guessing)
-	SkillUsed      *Skill `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
+	SkillUsed      string `json:"skillUsed,omitempty"`      // Power used (if activating an ability)
 }
 
 // type GuessActionDetails struct {
@@ -72,9 +72,9 @@ type ActionDetails struct {
 // 	SkillUsed    *Skill `json:"powerUsed,omitempty"`      // Power used (if activating an ability)
 // }
 
-type Skill interface {
-	Activate() string
-}
+// type Skill interface {
+// 	Activate() string
+// }
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
