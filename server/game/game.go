@@ -163,7 +163,8 @@ func (lobby *Lobby) UseSkill(player Player, actionDetails ActionDetails) (*Lobby
 		stance = NewFootballStance()
 	}
 
-	stance.UseSkill(actionDetails.SkillUsed)
+	res := stance.UseSkill(actionDetails.SkillUsed)
+	fmt.Printf("USE LE SKILL %s", res)
 
 	lobby.Game.Rally.TurnActionPoints[player.ID].Skill -= 1
 

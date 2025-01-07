@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { createGame, endTurn, guess } from "$lib/api";
+  import { createGame, endTurn, guess, useSkill } from "$lib/api";
   import { GAME_STATE, STANCE_DATA } from "$lib/constants";
   import { lobby, player } from "$lib/store";
 
@@ -47,7 +47,9 @@
     await createGame($lobby.ID, $player);
   }
 
-  async function handleSkillClick(skillId: string) {}
+  async function handleSkillClick(skillId: string) {
+    await useSkill($lobby.ID, $player, skillId);
+  }
 </script>
 
 <div>
