@@ -48,7 +48,7 @@ export interface Lobby {
 export type WebSocketIncomingMessage = {
   //Why is this lowercase?
   event: string;
-  data: string;
+  data: string | ActionLog;
 };
 
 export type WebSocketOutgoingMessage = {

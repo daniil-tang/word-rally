@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import { createGame, endTurn, guess, useSkill } from "$lib/api";
   import { GAME_STATE, STANCE_DATA } from "$lib/constants";
-  import { lobby, player } from "$lib/store";
+  import { actionLog, lobby, player } from "$lib/store";
 
   $: {
     if (!$player?.ID) goto("/");
@@ -145,6 +145,19 @@
       </div>
     </div>
   </div>
+  <br />
+  <br />
+  <div class="nes-container with-title">
+    <h3 class="title">Action Logs</h3>
+
+    <div class="log-container">
+      {#each $actionLog as log, index}
+        <div class="log-item">
+          {log}
+        </div>
+      {/each}
+    </div>
+  </div>
 </div>
 
 <style>
@@ -242,4 +255,22 @@
   /* .back-to-lobby-button {
     align-self: flex-end;
   } */
+  .log-container {
+    width: 100%;
+    height: 300px;
+    border: 2px solid #2d2f31;
+    padding: 10px;
+    /* background-color: #2d2f31; */
+    border-radius: 8px;
+    overflow-y: auto;
+  }
+
+  .log-item {
+    margin-bottom: 10px;
+    /* color: #f8f8f2; */
+    font-size: 14px;
+    /* background-color: #444; */
+    padding: 5px;
+    border-radius: 4px;
+  }
 </style>

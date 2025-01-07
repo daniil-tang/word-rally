@@ -369,7 +369,7 @@ func (gm *GameManager) broadcastToLobbyPlayers(lobbyID string, msg []byte) {
 	for _, connToBroadcast := range gm.GetLobbyConnections(lobbyID) {
 		err := connToBroadcast.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
-			log.Println("Error sending lobby back to client", err)
+			log.Println("Error sending message back to client", err)
 			continue
 		}
 	}

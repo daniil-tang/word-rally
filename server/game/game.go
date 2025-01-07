@@ -173,6 +173,7 @@ func (lobby *Lobby) UseSkill(player Player, actionDetails ActionDetails) (*Lobby
 
 func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
 	log.Printf("END TURN")
+
 	if isRuneArrayFilled(lobby.Game.Rally.Guesses[player.ID]) {
 		// Player wins the rally
 		lobby.incrementScore(player.ID)

@@ -135,23 +135,54 @@ func (gm *GameManager) HandlePlayerAction(lobbyID string, player Player, action 
 	log.Printf("ACTION %s", action)
 	switch action {
 	case ActionGuess:
+		playerGuessesBefore := countNonEmptyElements(lobby.Game.Rally.Guesses[player.ID])
 		_, err := lobby.Guess(player, actionDetails)
 		if err != nil {
 			return nil, err
+		}
+
+		var actionLogMsg string
+		if playerGuessesBefore < countNonEmptyElements(lobby.Game.Rally.Guesses[player.ID]) {
+			actionLogMsg = player.Name + " made a correct guess"
+		} else {
+			actionLogMsg = player.Name + " made an incorrect guess"
+		}
+
+		actionLog := NewActionLog(player.ID, actionLogMsg)
+		if encodedLog, err := actionLog.getEncodedActionLogResponse(); err == nil {
+			gm.broadcastToLobbyPlayers(lobby.ID, encodedLog)
 		}
 	case ActionUseSkill:
 		_, err := lobby.UseSkill(player, actionDetails)
 		if err != nil {
 			return nil, err
 		}
+		actionLog := NewActionLog(player.ID, fmt.Sprintf(player.Name+" used skill: %s", actionDetails.SkillUsed))
+		if encodedLog, err := actionLog.getEncodedActionLogResponse(); err == nil {
+			gm.broadcastToLobbyPlayers(lobby.ID, encodedLog)
+		}
 	case ActionEndTurn:
 		_, err := lobby.EndTurn(player)
 		if err != nil {
 			return nil, err
 		}
+		actionLog := NewActionLog(player.ID, player.Name+" ended their turn")
+		if encodedLog, err := actionLog.getEncodedActionLogResponse(); err == nil {
+			gm.broadcastToLobbyPlayers(lobby.ID, encodedLog)
+		}
 	}
 
 	return lobby, nil
+}
+
+func countNonEmptyElements(runes []rune) int {
+	count := 0
+	for _, r := range runes {
+		if r != '\x00' { // Check if the element is an empty rune (zero value)
+			count++
+		}
+	}
+	return count
 }
 
 func (gm *GameManager) UpdatePlayerSettings(lobbyID string, player Player, settings PlayerSettings) (*Lobby, error) {

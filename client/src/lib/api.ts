@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { lobby, player, websocket } from "./store";
+import { actionLog, lobby, player, websocket } from "./store";
 import type { Player, PlayerSettings, WebSocketIncomingMessage, WebSocketOutgoingMessage } from "./types";
 
 const BASE_URL = "http://localhost:8080";
@@ -24,6 +24,13 @@ export async function initWS() {
         lobby.set(JSON.parse(eventData.data));
         break;
       // Should add an error case: Or default = error
+      case "actionlog":
+        console.log("ACTION LOG!", event);
+        // let data = JSON.parse(eventData.data);
+        actionLog.update((log) => {
+          return [...log, eventData.data.message];
+        });
+        break;
     }
   });
 }
