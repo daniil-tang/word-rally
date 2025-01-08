@@ -2,6 +2,8 @@ package game
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 type StanceType string
@@ -17,12 +19,12 @@ type SkillMetadata struct {
 }
 
 type Skill interface {
-	Execute() string
+	Execute(lobby *Lobby) string
 	GetMetadata() SkillMetadata
 }
 
 type Stance interface {
-	UseSkill(skill string) string
+	UseSkill(lobby *Lobby, skill string) string
 	GetSkillsMetadata() map[string]SkillMetadata
 }
 
@@ -31,9 +33,9 @@ type BaseStance struct {
 	Skills     map[string]Skill
 }
 
-func (s BaseStance) UseSkill(skill string) string {
+func (s BaseStance) UseSkill(lobby *Lobby, skill string) string {
 	if skillFunc, exists := s.Skills[skill]; exists {
-		return skillFunc.Execute()
+		return skillFunc.Execute(lobby)
 	}
 	return fmt.Sprintf("Skill %s not found!", skill)
 }
@@ -75,7 +77,7 @@ func NewFootballStance() Stance {
 
 type SecondServeSkill struct{}
 
-func (s *SecondServeSkill) Execute() string {
+func (s *SecondServeSkill) Execute(lobby *Lobby) string {
 	return "Executing a second serve in Tennis"
 }
 
@@ -85,7 +87,7 @@ func (s *SecondServeSkill) GetMetadata() SkillMetadata {
 
 type LiberoSkill struct{}
 
-func (s *LiberoSkill) Execute() string {
+func (s *LiberoSkill) Execute(lobby *Lobby) string {
 	return "Libero player receives the ball in Volleyball"
 }
 
@@ -95,8 +97,42 @@ func (s *LiberoSkill) GetMetadata() SkillMetadata {
 
 type TackleSkill struct{}
 
-func (s *TackleSkill) Execute() string {
-	return "Executing a tackle in Football"
+func (s *TackleSkill) Execute(lobby *Lobby) string {
+	// Get the current player and opponent IDs
+	currentPlayerID := lobby.Game.Rally.Turn % 2
+	opponentID := (currentPlayerID + 1) % 2
+
+	var playerIDs []string
+	for id := range lobby.Game.Rally.Guesses {
+		playerIDs = append(playerIDs, id)
+	}
+
+	currentPlayer := playerIDs[currentPlayerID]
+	opponent := playerIDs[opponentID]
+
+	// Find all correct guesses from opponent that current player hasn't guessed yet
+	var availableGuesses []int
+	for i, opponentGuess := range lobby.Game.Rally.Guesses[opponent] {
+		if opponentGuess != '\x00' && lobby.Game.Rally.Guesses[currentPlayer][i] == '\x00' {
+			availableGuesses = append(availableGuesses, i)
+		}
+	}
+
+	// If there are no available guesses to steal, return early
+	if len(availableGuesses) == 0 {
+		return "No new correct guesses available to steal"
+	}
+
+	// Randomly select one of the available guesses
+	rand.Seed(time.Now().UnixNano())
+	selectedIndex := availableGuesses[rand.Intn(len(availableGuesses))]
+
+	// Copy the guess to the current player's guesses and remove it from opponent
+	stolenGuess := lobby.Game.Rally.Guesses[opponent][selectedIndex]
+	lobby.Game.Rally.Guesses[currentPlayer][selectedIndex] = stolenGuess
+	lobby.Game.Rally.Guesses[opponent][selectedIndex] = '\x00'
+
+	return "Successfully stole one correct guess from opponent"
 }
 
 func (s *TackleSkill) GetMetadata() SkillMetadata {
