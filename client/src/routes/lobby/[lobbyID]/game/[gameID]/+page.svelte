@@ -82,8 +82,10 @@
       <div class="nes-container with-title player-board">
         <p class="title">{$player.Name}'s Board</p>
         <div class="guess-container">
-          {#each playerGuesses as playerGuess}
-            <div class={`guess-box ${playerGuess ? "correct-guess" : ""}`}></div>
+          {#each playerGuesses as playerGuess, i}
+            <div class={`guess-box ${playerGuess ? "correct-guess" : ""}`}>
+              {playerGuess ? `${$lobby.Game?.Rally?.Word[i]}` : ""}
+            </div>
           {/each}
         </div>
       </div>
@@ -214,6 +216,10 @@
     text-align: center;
     border: 1px solid black;
     text-transform: uppercase;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
   }
 
   .correct-guess {

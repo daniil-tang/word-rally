@@ -36,6 +36,7 @@ type SkillType string
 const (
 	Goalkeeper SkillType = "goalkeeper"
 	Tackle     SkillType = "tackle"
+	Fault      SkillType = "fault"
 )
 
 // type StatusEffectType string

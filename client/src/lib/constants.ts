@@ -29,8 +29,12 @@ export const STANCE_DATA: StanceData = {
   tennis: {
     skills: [
       {
-        id: "secondserve",
-        name: "2nd Serve",
+        id: "ace",
+        name: "Ace",
+      },
+      {
+        id: "fault",
+        name: "Fault",
       },
     ],
   },

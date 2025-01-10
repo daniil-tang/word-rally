@@ -138,7 +138,6 @@ func (gm *GameManager) HandlePlayerAction(lobbyID string, player Player, action 
 		playerGuessesBefore := countNonEmptyElements(lobby.Game.Rally.Guesses[player.ID])
 		_, err := lobby.Guess(player, actionDetails)
 		if err != nil {
-			log.Printf("***ERR " + err.Error())
 			actionLog := NewActionLog(player.ID, err.Error())
 			if encodedLog, err := actionLog.getEncodedActionLogResponse(); err == nil {
 				gm.broadcastToLobbyPlayers(lobby.ID, encodedLog)

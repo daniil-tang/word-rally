@@ -54,7 +54,8 @@ func NewTennisStance() Stance {
 	return BaseStance{
 		StanceType: StanceTennis,
 		Skills: map[string]Skill{
-			"secondserve": &SecondServeSkill{},
+			"ace":   &AceSkill{},
+			"fault": &FaultSkill{},
 		},
 	}
 }
@@ -78,13 +79,34 @@ func NewFootballStance() Stance {
 	}
 }
 
-type SecondServeSkill struct{}
+type AceSkill struct{}
 
-func (s *SecondServeSkill) Execute(lobby *Lobby) string {
+func (s *AceSkill) Execute(lobby *Lobby) string {
+	// Uses guess point
+	// Has to have gues point remaining
+
 	return "Executing a second serve in Tennis"
 }
 
-func (s *SecondServeSkill) GetMetadata() SkillMetadata {
+func (s *AceSkill) GetMetadata() SkillMetadata {
+	return SkillMetadata{Cooldown: 2}
+}
+
+type FaultSkill struct{}
+
+func (s *FaultSkill) Execute(lobby *Lobby) string {
+	currentPlayer := lobby.Players[lobby.Game.Rally.Turn%2]
+	opponent := lobby.Players[(lobby.Game.Rally.Turn+1)%2]
+	lobby.Game.Rally.StatusEffects[opponent.ID][Fault] = &StatusEffect{
+		IsActive: true,
+		Duration: s.GetMetadata().Duration,
+	}
+
+	lobby.Game.PlayerCooldowns[currentPlayer.ID][Fault] = s.GetMetadata().Cooldown
+	return "Opponent has received a fault!"
+}
+
+func (s *FaultSkill) GetMetadata() SkillMetadata {
 	return SkillMetadata{Cooldown: 2}
 }
 
@@ -169,12 +191,25 @@ Football (Soccer) Stance:
 Tackle: Steal a correct guess from the opponent.
 Goalkeeper: Block the opponent's correct guess.
 Offside Trap: Force the opponent to lose their next turn or guess.
+
 Tennis Stance:
 Ace: Make an unpredictable guess that can bypass the opponent’s block.
 Rally: Get an additional guess point for the next turn.
 Slice: Delay the opponent's next action by one turn.
+
 Volleyball Stance:
 Spike: Knock out one of the opponent’s guesses.
 Serve: Reveal a letter from the word, but only for you.
 Block: Prevent the opponent from using their skill for the next turn.
+*/
+
+/*
+Tennis:
+fault = miss next turn
+ace = auto correct guess
+
+Volleyball:
+Block = Prevent opponent from using skill next turn
+
+
 */
