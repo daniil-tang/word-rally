@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -16,6 +17,7 @@ const (
 
 type SkillMetadata struct {
 	Cooldown int
+	Duration int
 }
 
 type Skill interface {
@@ -70,7 +72,8 @@ func NewFootballStance() Stance {
 	return BaseStance{
 		StanceType: StanceFootball,
 		Skills: map[string]Skill{
-			"tackle": &TackleSkill{},
+			"tackle":     &TackleSkill{},
+			"goalkeeper": &GoalkeeperSkill{},
 		},
 	}
 }
@@ -132,9 +135,46 @@ func (s *TackleSkill) Execute(lobby *Lobby) string {
 	lobby.Game.Rally.Guesses[currentPlayer][selectedIndex] = stolenGuess
 	lobby.Game.Rally.Guesses[opponent][selectedIndex] = '\x00'
 
+	lobby.Game.PlayerCooldowns[currentPlayer][Tackle] = s.GetMetadata().Cooldown
+
 	return "Successfully stole one correct guess from opponent"
 }
 
 func (s *TackleSkill) GetMetadata() SkillMetadata {
-	return SkillMetadata{Cooldown: 5}
+	return SkillMetadata{Cooldown: 5, Duration: 0}
 }
+
+type GoalkeeperSkill struct{}
+
+func (s *GoalkeeperSkill) Execute(lobby *Lobby) string {
+	currentPlayer := lobby.Players[lobby.Game.Rally.Turn%2]
+	opponent := lobby.Players[(lobby.Game.Rally.Turn+1)%2]
+	log.Printf("OPPONENT NAME " + opponent.Name)
+	lobby.Game.Rally.StatusEffects[opponent.ID][Goalkeeper] = &StatusEffect{
+		IsActive: true,
+		Duration: s.GetMetadata().Duration,
+	}
+
+	lobby.Game.PlayerCooldowns[currentPlayer.ID][Goalkeeper] = s.GetMetadata().Cooldown
+
+	return fmt.Sprintf("Player %d activates Goalkeeper skill - next 3 correct guesses by opponent will be blocked!")
+}
+
+func (s *GoalkeeperSkill) GetMetadata() SkillMetadata {
+	return SkillMetadata{Cooldown: 4, Duration: 1} // Higher cooldown due to powerful effect
+}
+
+/*
+Football (Soccer) Stance:
+Tackle: Steal a correct guess from the opponent.
+Goalkeeper: Block the opponent's correct guess.
+Offside Trap: Force the opponent to lose their next turn or guess.
+Tennis Stance:
+Ace: Make an unpredictable guess that can bypass the opponent’s block.
+Rally: Get an additional guess point for the next turn.
+Slice: Delay the opponent's next action by one turn.
+Volleyball Stance:
+Spike: Knock out one of the opponent’s guesses.
+Serve: Reveal a letter from the word, but only for you.
+Block: Prevent the opponent from using their skill for the next turn.
+*/

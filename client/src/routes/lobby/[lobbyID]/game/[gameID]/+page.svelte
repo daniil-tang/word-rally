@@ -94,9 +94,19 @@
           <span>Skill Points: {$lobby.Game?.Rally?.TurnActionPoints[$player?.ID]?.Skill}</span>
         </div>
         <div class="skills-container">
-          {#each STANCE_DATA[$lobby.PlayerSettings[$player.ID].Stance].skills as stanceData}
+          {#each STANCE_DATA[$lobby.PlayerSettings[$player.ID].Stance].skills as skillData}
             <!--Disable button if on cooldown  -->
-            <button on:click={() => handleSkillClick(stanceData.id)} class="nes-btn">{stanceData.name}</button>
+            {#if ($lobby.Game?.PlayerCooldowns?.[$player.ID]?.[skillData.id] ?? 0) > 0}
+              <button disabled class={`nes-btn is-disabled`}
+                >Cooldown: {$lobby.Game?.PlayerCooldowns?.[$player.ID]?.[skillData.id]}</button
+              >
+            {:else}
+              <button
+                on:click={() => handleSkillClick(skillData.id)}
+                class={`nes-btn ${($lobby.Game?.PlayerCooldowns?.[$player.ID]?.[skillData.id] ?? 0) > 0 ? "is-disabled" : ""}`}
+                >{skillData.name}</button
+              >
+            {/if}
           {/each}
         </div>
       </div>

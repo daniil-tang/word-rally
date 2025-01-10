@@ -48,6 +48,10 @@ export const STANCE_DATA: StanceData = {
         id: "tackle",
         name: "Tackle",
       },
+      {
+        id: "goalkeeper",
+        name: "Goalkeeper",
+      },
     ],
   },
 };
