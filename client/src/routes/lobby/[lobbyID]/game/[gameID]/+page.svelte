@@ -44,7 +44,8 @@
   }
 
   async function handleReturnToLobby() {
-    await createGame($lobby.ID, $player);
+    // await createGame($lobby.ID, $player);
+    goto(`/lobby/${$lobby.ID}`);
   }
 
   async function handleSkillClick(skillId: string) {
@@ -63,12 +64,11 @@
             {"You Lose :("}
           {/if}
         </h1>
-        {#if $player.ID == $lobby?.Host}
-          <button class="nes-btn is-primary back-to-lobby-button" on:click={handleReturnToLobby}>Return to Lobby</button
-          >
-        {:else}
+        <!-- {#if $player.ID == $lobby?.Host} -->
+        <button class="nes-btn is-primary back-to-lobby-button" on:click={handleReturnToLobby}>Return to Lobby</button>
+        <!-- {:else}
           <p>Waiting for host to return you to lobby</p>
-        {/if}
+        {/if} -->
       </menu>
     </form>
   </dialog>

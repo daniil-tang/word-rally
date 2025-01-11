@@ -13,7 +13,7 @@
     if (!$lobby) goto(`/lobby`);
     // Goto game screen
     if ($lobby?.Game?.State == GAME_STATE.IN_PROGRESS) goto(`/lobby/${$lobby.ID}/game/${$lobby.Game.ID}`);
-    if ($lobby?.Game?.State == GAME_STATE.FINISHED) goto(`/`); // Prolly don't need this..?
+    // if ($lobby?.Game?.State == GAME_STATE.FINISHED) goto(`/`); // Prolly don't need this..?
   }
 
   $: {
@@ -33,15 +33,16 @@
 
   $: opponent = $lobby.Players.find((p) => p.ID != $player.ID);
 
-  onMount(() => {
-    // If there's no game create one
-    // If there's a game go to game (Handle in reactive?)
-    // Handle all game states here
-    createGame($lobby.ID, $player);
-  });
+  function handlePlayerReady() {
+    updatePlayerSettings($lobby.ID, $player, {
+      ...$lobby.PlayerSettings[$player.ID],
+      Ready: !$lobby.PlayerSettings[$player.ID].Ready,
+    });
+  }
 
-  function handleStartGame() {
-    startGame($lobby.ID, $player);
+  async function handleStartGame() {
+    await createGame($lobby.ID, $player);
+    await startGame($lobby.ID, $player);
   }
 </script>
 
@@ -53,8 +54,6 @@
       <h3>{$player.Name}</h3>
       Select your stance:
       <div class="nes-container stance-container">
-        <!--               checked={stance.id == $lobby.PlayerSettings[$player.ID].Stance}
- -->
         {#each STANCES as stance, i}
           <label>
             <input type="radio" class="nes-radio" name="player-stance" bind:group={selectedStance} value={stance.id} />
@@ -62,7 +61,10 @@
           </label>
         {/each}
       </div>
-      <button class="nes-btn ready-button">Ready</button>
+      <button
+        class={`nes-btn ready-button ${$lobby.PlayerSettings[$player.ID].Ready ? "is-success" : ""}`}
+        on:click={handlePlayerReady}>Ready</button
+      >
     </div>
 
     <div class="nes-container player-container opponent-container">
@@ -87,7 +89,13 @@
     </div>
   </div>
   {#if $player.ID == $lobby.Host}
-    <button type="button" class={"nes-btn is-primary start-button"} on:click={handleStartGame}>Start Game</button>
+    <button
+      type="button"
+      class={`nes-btn is-primary start-button ${!opponent || !($lobby.PlayerSettings[$player.ID].Ready && $lobby.PlayerSettings[opponent.ID].Ready) ? "is-disabled" : ""}`}
+      on:click={handleStartGame}
+      disabled={!opponent || !($lobby.PlayerSettings[$player.ID].Ready && $lobby.PlayerSettings[opponent.ID].Ready)}
+      >Start Game</button
+    >
   {/if}
 </div>
 

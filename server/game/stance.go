@@ -84,12 +84,29 @@ type AceSkill struct{}
 func (s *AceSkill) Execute(lobby *Lobby) string {
 	// Uses guess point
 	// Has to have gues point remaining
+	currentPlayer := lobby.Players[lobby.Game.Rally.Turn%2]
+	// opponent := lobby.Players[(lobby.Game.Rally.Turn+1)%2]
+
+	if lobby.Game.Rally.TurnActionPoints[currentPlayer.ID].Guess <= 0 {
+		return "Unable to guess"
+	}
+
+	for i, _ := range lobby.Game.Rally.Guesses[currentPlayer.ID] {
+		if lobby.Game.Rally.Guesses[currentPlayer.ID][i] == '\x00' {
+			lobby.Game.Rally.Guesses[currentPlayer.ID][i] = rune(lobby.Game.Rally.Word[i])
+			break
+		}
+	}
+
+	lobby.Game.Rally.TurnActionPoints[currentPlayer.ID].Guess--
+
+	lobby.Game.PlayerCooldowns[currentPlayer.ID][Ace] = s.GetMetadata().Cooldown
 
 	return "Executing a second serve in Tennis"
 }
 
 func (s *AceSkill) GetMetadata() SkillMetadata {
-	return SkillMetadata{Cooldown: 2}
+	return SkillMetadata{Cooldown: 5, Duration: 0}
 }
 
 type FaultSkill struct{}
@@ -107,7 +124,7 @@ func (s *FaultSkill) Execute(lobby *Lobby) string {
 }
 
 func (s *FaultSkill) GetMetadata() SkillMetadata {
-	return SkillMetadata{Cooldown: 2}
+	return SkillMetadata{Cooldown: 5, Duration: 1}
 }
 
 type LiberoSkill struct{}
@@ -124,21 +141,13 @@ type TackleSkill struct{}
 
 func (s *TackleSkill) Execute(lobby *Lobby) string {
 	// Get the current player and opponent IDs
-	currentPlayerID := lobby.Game.Rally.Turn % 2
-	opponentID := (currentPlayerID + 1) % 2
-
-	var playerIDs []string
-	for id := range lobby.Game.Rally.Guesses {
-		playerIDs = append(playerIDs, id)
-	}
-
-	currentPlayer := playerIDs[currentPlayerID]
-	opponent := playerIDs[opponentID]
+	currentPlayer := lobby.Players[lobby.Game.Rally.Turn%2]
+	opponent := lobby.Players[(lobby.Game.Rally.Turn+1)%2]
 
 	// Find all correct guesses from opponent that current player hasn't guessed yet
 	var availableGuesses []int
-	for i, opponentGuess := range lobby.Game.Rally.Guesses[opponent] {
-		if opponentGuess != '\x00' && lobby.Game.Rally.Guesses[currentPlayer][i] == '\x00' {
+	for i, opponentGuess := range lobby.Game.Rally.Guesses[opponent.ID] {
+		if opponentGuess != '\x00' && lobby.Game.Rally.Guesses[currentPlayer.ID][i] == '\x00' {
 			availableGuesses = append(availableGuesses, i)
 		}
 	}
@@ -153,11 +162,11 @@ func (s *TackleSkill) Execute(lobby *Lobby) string {
 	selectedIndex := availableGuesses[rand.Intn(len(availableGuesses))]
 
 	// Copy the guess to the current player's guesses and remove it from opponent
-	stolenGuess := lobby.Game.Rally.Guesses[opponent][selectedIndex]
-	lobby.Game.Rally.Guesses[currentPlayer][selectedIndex] = stolenGuess
-	lobby.Game.Rally.Guesses[opponent][selectedIndex] = '\x00'
+	stolenGuess := lobby.Game.Rally.Guesses[opponent.ID][selectedIndex]
+	lobby.Game.Rally.Guesses[currentPlayer.ID][selectedIndex] = stolenGuess
+	lobby.Game.Rally.Guesses[opponent.ID][selectedIndex] = '\x00'
 
-	lobby.Game.PlayerCooldowns[currentPlayer][Tackle] = s.GetMetadata().Cooldown
+	lobby.Game.PlayerCooldowns[currentPlayer.ID][Tackle] = s.GetMetadata().Cooldown
 
 	return "Successfully stole one correct guess from opponent"
 }

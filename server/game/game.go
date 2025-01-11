@@ -37,6 +37,7 @@ const (
 	Goalkeeper SkillType = "goalkeeper"
 	Tackle     SkillType = "tackle"
 	Fault      SkillType = "fault"
+	Ace        SkillType = "ace"
 )
 
 // type StatusEffectType string
@@ -112,7 +113,7 @@ func (lobby *Lobby) StartGame() (*Lobby, error) {
 
 func (lobby *Lobby) initializeRally() *Lobby {
 	lobby.Game.Rally = &Rally{
-		Word:             "HELLO",
+		Word:             "A",
 		StatusEffects:    make(map[string]map[SkillType]*StatusEffect),
 		Guesses:          make(map[string][]rune),
 		Turn:             lobby.Game.CurrentServer,
@@ -290,6 +291,9 @@ func (lobby *Lobby) incrementScore(playerID string) {
 	//Reset rally or declare game winner if score >= 3
 	if lobby.Game.Score[playerID] >= 3 {
 		lobby.Game.State = StateFinished
+		for _, p := range lobby.Players {
+			lobby.PlayerSettings[p.ID].Ready = false
+		}
 	} else {
 		lobby.Game.CurrentServer = (lobby.Game.CurrentServer + 1) % len(lobby.Players)
 		lobby.initializeRally()

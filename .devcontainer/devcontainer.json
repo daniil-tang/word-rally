@@ -6,7 +6,8 @@
     "ms-vscode.go", // Go extension
     "dbaeumer.vscode-eslint", // For ESLint support in React
     "esbenp.prettier-vscode", // For Prettier support
-    "svelte.svelte-vscode"
+    "svelte.svelte-vscode",
+    "saoudrizwan.claude-dev"
   ],
   // "postCreateCommand": "cd /frontend && npm install", // You can add any additional setup commands here
   "settings": {
