@@ -1,4 +1,24 @@
+Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+ 
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="cloud-config.txt"
+ 
+#cloud-config
+cloud_final_modules:
+- [scripts-user, always]
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="userdata.txt"
+
 #!/bin/bash
+/bin/echo "Hello World 1" >> /home/ec2-user/testfile.txt
 
 # Update packages and install necessary tools
 sudo dnf update -y
@@ -16,8 +36,8 @@ sudo dnf install nginx -y
 sudo npm install -g pnpm
 
 # Install PM2 globally
-# sudo npm install pm2@latest -g
-sudo pnpm add -g pm2
+sudo npm install pm2@latest -g
+# sudo pnpm add -g pm2
 
 # Start and enable Nginx to run on boot
 sudo systemctl start nginx
@@ -27,11 +47,17 @@ git clone https://github.com/daniil-tang/word-rally.git /home/ec2-user/word-rall
 
 # Build server
 cd /home/ec2-user/word-rally/server
-go build -o word-rally-server .
+sudo go build -buildvcs=false -o word-rally-server .
+chmod +x /home/ec2-user/word-rally-server
+
+# Set environment variables for the entire shell session
+echo "export VITE_SERVER_URL=http://44.224.115.98/api" >> ~/.bash_profile
+echo "export VITE_WEBSOCKET_URL=http://44.224.115.98/ws" >> ~/.bash_profile
+
+# Load new environment variables
+source ~/.bash_profile
 
 # Build client
-sudo export VITE_SERVER_URL="http://44.224.115.98/api"
-sudo export VITE_WEBSOCKET_URL="http://44.224.115.98/ws"
 cd /home/ec2-user/word-rally/client
 pnpm install
 pnpm run build
@@ -41,43 +67,60 @@ pnpm run build
 # pm2 start ./word-rally-server --name word-rally-server
 
 # Start client & server
-cd /home/ec2-user/word-rally
-pm2 start ecosystem.config.js 
+cd /home/ec2-user/word-rally/client
+# pm2 start ecosystem.config.js 
+pm2 start ./build/index.js --name word-rally-client
+cd /home/ec2-user/word-rally/server
+./word-rally-server
 
 # Configuration for reverse proxy, e.g., using Nginx for Go and SvelteKit apps (optional)
 sudo bash -c 'cat <<EOF > /etc/nginx/nginx.conf
-server {
-    listen 80;
+user nginx;
+worker_processes 1;
 
-    # Proxy API requests to Go backend
-    location /api/ {
-        proxy_pass http://localhost:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;  # Required for WebSockets
-        proxy_set_header Connection 'upgrade';  # Required for WebSockets
-        proxy_set_header Host $host;
-    }
+events {}
 
-    # Proxy frontend requests to SvelteKit SSR app
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;  # Required for WebSockets
-        proxy_set_header Connection 'upgrade';  # Required for WebSockets
-        proxy_set_header Host $host;
-    }
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
 
-    location /ws {
-        proxy_pass http://localhost:8080/ws;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;  # Required for WebSockets
-        proxy_set_header Connection 'upgrade';  # Required for WebSockets
-        proxy_set_header Host $host;
+    access_log  /var/log/nginx/access.log;
+    error_log   /var/log/nginx/error.log;
+
+    server {
+        listen 80;
+
+        # Proxy API requests to Go backend
+        location /api/ {
+            proxy_pass http://localhost:8080;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;  # Required for WebSockets
+            proxy_set_header Connection "upgrade";  # Required for WebSockets
+            proxy_set_header Host \$host;
+        }
+
+        # Proxy frontend requests to SvelteKit SSR app
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;  # Required for WebSockets
+            proxy_set_header Connection "upgrade";  # Required for WebSockets
+            proxy_set_header Host \$host;
+        }
+
+        location /ws {
+            proxy_pass http://localhost:8080/ws;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;  # Required for WebSockets
+            proxy_set_header Connection "upgrade";  # Required for WebSockets
+            proxy_set_header Host \$host;
+        }
     }
 }
 EOF'
 
 # Restart Nginx to apply the changes
 sudo systemctl restart nginx
+
 
 pm2 logs

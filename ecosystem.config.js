@@ -12,9 +12,9 @@ module.exports = {
         // BASE_URL: "http://localhost:8080",
       },
     },
-    {
-      name: "word-rally-server",
-      script: "./server/word-rally-server",
-    },
+    // {
+    //   name: "word-rally-server",
+    //   script: "./server/word-rally-server",
+    // },
   ],
 };

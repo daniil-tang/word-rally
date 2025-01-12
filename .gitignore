@@ -33,3 +33,5 @@ Thumbs.db
 *.test
 *.out
 go.work
+
+*.pem
