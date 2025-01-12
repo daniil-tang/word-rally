@@ -72,7 +72,15 @@ type GameSettings struct {
 	// Points and timer maybe
 }
 
-var WordList = []string{"HELLO", "GOODBYE"}
+var WordList = []string{
+	"APPLE", "BANANA", "ORANGE", "PEAR", "GRAPE", "LEMON", "WATERMELON", "STRAWBERRY",
+	"MANGO", "PINEAPPLE", "KIWI", "TOMATO", "CARROT", "POTATO", "BROCCOLI", "PEAS",
+	"ONION", "GARLIC", "CELERY", "SPINACH", "LETTUCE", "CABBAGE", "CUCUMBER", "ZUCCHINI",
+	"MELON", "PEACH", "PLUM", "CHERRY", "BERRY", "PAPAYA", "TANGERINE", "LIME",
+	"PUMPKIN", "PINECONES", "COCONUT", "STRAWBERRIES", "TOMATOES", "CASSAVA", "SQUASH",
+	"PERSIMMON", "FICUS", "MELON", "POTATOES", "RUBY", "SAPPHIRE", "DIAMOND", "EMERALD",
+	"AMBER", "PEARL", "GARNET", "TOPAZ", "OPAL", "CITRINE", "LAPIS", "JADE", "TURQUOISE",
+}
 
 func (lobby *Lobby) CreateNewGame() *Lobby {
 	lobby.Game = &Game{

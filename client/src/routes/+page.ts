@@ -5,3 +5,4 @@ export const ssr = false;
 export const load = async () => {
   initWS();
 };
+export const prerender = true;

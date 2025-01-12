@@ -6,3 +6,4 @@ export const ssr = false;
 export const load = async () => {
   await getPlayerLobby(get(player));
 };
+export const prerender = true;

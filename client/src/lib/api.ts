@@ -1,11 +1,13 @@
 import { get } from "svelte/store";
 import { actionLog, lobby, player, websocket } from "./store";
 import type { Player, PlayerSettings, WebSocketIncomingMessage, WebSocketOutgoingMessage } from "./types";
-
-const BASE_URL = "http://localhost:8080";
-
+const BASE_URL = import.meta.env.VITE_SERVER_URL;
+const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
+// const BASE_URL = "http://localhost:8080";
+console.log("ENV VAR", BASE_URL);
 export async function initWS() {
-  const socket = new WebSocket("ws://localhost:8080/ws");
+  // const socket = new WebSocket("ws://localhost:8080/ws");
+  const socket = new WebSocket(WS_URL);
   socket.addEventListener("open", function (event) {
     console.log("WebSocket open.");
     websocket.set(socket);
