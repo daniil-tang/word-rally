@@ -41,11 +41,11 @@ func (gm *GameManager) CreateLobby(hostPlayer Player) (*Lobby, error) {
 	defer gm.mutex.Unlock()
 
 	// Keep generating lobby ID until a unique ID is found
-	// lobbyID := generateLobbyID()
-	// for _, exists := gm.lobbies[lobbyID]; exists; {
-	// 	lobbyID = generateLobbyID()
-	// }
-	lobbyID := "ABCD"
+	lobbyID := generateLobbyID()
+	for _, exists := gm.lobbies[lobbyID]; exists; {
+		lobbyID = generateLobbyID()
+	}
+	// lobbyID := "ABCD"
 
 	newLobby := NewLobby(lobbyID, hostPlayer)
 	gm.lobbies[lobbyID] = newLobby
