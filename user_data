@@ -73,6 +73,10 @@ pm2 start ./build/index.js --name word-rally-client
 cd /home/ec2-user/word-rally/server
 ./word-rally-server
 
+/bin/echo "Hello World 2 - NGINX Stuff" >> /home/ec2-user/testfile.txt
+
+sudo cat /etc/nginx/nginx.conf >> /home/ec2-user/testfile.txt
+
 # Configuration for reverse proxy, e.g., using Nginx for Go and SvelteKit apps (optional)
 sudo bash -c 'cat <<EOF > /etc/nginx/nginx.conf
 user nginx;

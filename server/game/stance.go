@@ -106,7 +106,7 @@ func (s *AceSkill) Execute(lobby *Lobby) string {
 }
 
 func (s *AceSkill) GetMetadata() SkillMetadata {
-	return SkillMetadata{Cooldown: 5, Duration: 0}
+	return SkillMetadata{Cooldown: 4, Duration: 0}
 }
 
 type FaultSkill struct{}
@@ -172,7 +172,7 @@ func (s *TackleSkill) Execute(lobby *Lobby) string {
 }
 
 func (s *TackleSkill) GetMetadata() SkillMetadata {
-	return SkillMetadata{Cooldown: 5, Duration: 0}
+	return SkillMetadata{Cooldown: 3, Duration: 0}
 }
 
 type GoalkeeperSkill struct{}

@@ -67,6 +67,7 @@ export type StanceData = {
     skills: {
       id: string;
       name: string;
+      description: string;
     }[];
   };
 };

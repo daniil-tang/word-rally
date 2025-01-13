@@ -9,10 +9,10 @@ export const STANCES: Stance[] = [
     id: "tennis",
     name: "Tennis",
   },
-  {
-    id: "volleyball",
-    name: "Volleyball",
-  },
+  // {
+  //   id: "volleyball",
+  //   name: "Volleyball",
+  // },
   {
     id: "football",
     name: "Football",
@@ -31,30 +31,34 @@ export const STANCE_DATA: StanceData = {
       {
         id: "ace",
         name: "Ace",
+        description: "Instantly grants a correct guess. (Requires 1 guess point).",
       },
       {
         id: "fault",
         name: "Fault",
+        description: "Makes opponent miss next turn.",
       },
     ],
   },
-  volleyball: {
-    skills: [
-      {
-        id: "libero",
-        name: "Libero",
-      },
-    ],
-  },
+  // volleyball: {
+  //   skills: [
+  //     {
+  //       id: "libero",
+  //       name: "Libero",
+  //     },
+  //   ],
+  // },
   football: {
     skills: [
       {
         id: "tackle",
         name: "Tackle",
+        description: "Steals a correct guess from the opponent.",
       },
       {
         id: "goalkeeper",
         name: "Goalkeeper",
+        description: "Block the opponent's next correct guess.",
       },
     ],
   },

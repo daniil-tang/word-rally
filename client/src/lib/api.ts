@@ -1,8 +1,8 @@
 import { get } from "svelte/store";
 import { actionLog, lobby, player, websocket } from "./store";
 import type { Player, PlayerSettings, WebSocketIncomingMessage, WebSocketOutgoingMessage } from "./types";
-const BASE_URL = import.meta.env.VITE_SERVER_URL;
-const WS_URL = import.meta.env.VITE_WEBSOCKET_URL;
+const BASE_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:8080";
+const WS_URL = import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080/ws";
 // const BASE_URL = "http://localhost:8080";
 console.log("ENV VAR", BASE_URL);
 export async function initWS() {
@@ -24,6 +24,7 @@ export async function initWS() {
     switch (eventData.event) {
       case "lobby":
         lobby.set(JSON.parse(eventData.data));
+        console.log("RALLY", JSON.parse(eventData.data)?.Game?.Rally?.StatusEffects);
         break;
       // Should add an error case: Or default = error
       case "actionlog":

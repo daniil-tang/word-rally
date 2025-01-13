@@ -85,6 +85,11 @@
             </label>
           {/each}
         </div>
+        {#if !opponent || !$lobby.PlayerSettings[opponent.ID].Ready}
+          <div class={`opponent-ready-text nes-text is-error`}>Not Ready</div>
+        {:else}
+          <div class={`opponent-ready-text  nes-text is-success`}>Ready</div>
+        {/if}
       {/if}
     </div>
   </div>
@@ -114,6 +119,12 @@
     display: block;
     margin: auto;
     margin-top: 10px;
+  }
+  .opponent-ready-text {
+    display: block;
+    margin: auto;
+    margin-top: 10px;
+    width: max-content;
   }
   .start-button {
     display: block;

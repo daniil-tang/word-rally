@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"log"
+	"math/rand"
 
 	"github.com/google/uuid"
 )
@@ -72,14 +73,21 @@ type GameSettings struct {
 	// Points and timer maybe
 }
 
+// var WordList = []string{
+// 	"APPLE", "BANANA", "ORANGE", "PEAR", "GRAPE", "LEMON", "WATERMELON", "STRAWBERRY",
+// 	"MANGO", "PINEAPPLE", "KIWI", "TOMATO", "CARROT", "POTATO", "BROCCOLI", "PEAS",
+// 	"ONION", "GARLIC", "CELERY", "SPINACH", "LETTUCE", "CABBAGE", "CUCUMBER", "ZUCCHINI",
+// 	"MELON", "PEACH", "PLUM", "CHERRY", "BERRY", "PAPAYA", "TANGERINE", "LIME",
+// 	"PUMPKIN", "PINECONES", "COCONUT", "STRAWBERRIES", "TOMATOES", "CASSAVA", "SQUASH",
+// 	"PERSIMMON", "FICUS", "MELON", "POTATOES", "RUBY", "SAPPHIRE", "DIAMOND", "EMERALD",
+// 	"AMBER", "PEARL", "GARNET", "TOPAZ", "OPAL", "CITRINE", "LAPIS", "JADE", "TURQUOISE",
+// }
+
 var WordList = []string{
-	"APPLE", "BANANA", "ORANGE", "PEAR", "GRAPE", "LEMON", "WATERMELON", "STRAWBERRY",
-	"MANGO", "PINEAPPLE", "KIWI", "TOMATO", "CARROT", "POTATO", "BROCCOLI", "PEAS",
-	"ONION", "GARLIC", "CELERY", "SPINACH", "LETTUCE", "CABBAGE", "CUCUMBER", "ZUCCHINI",
-	"MELON", "PEACH", "PLUM", "CHERRY", "BERRY", "PAPAYA", "TANGERINE", "LIME",
-	"PUMPKIN", "PINECONES", "COCONUT", "STRAWBERRIES", "TOMATOES", "CASSAVA", "SQUASH",
-	"PERSIMMON", "FICUS", "MELON", "POTATOES", "RUBY", "SAPPHIRE", "DIAMOND", "EMERALD",
-	"AMBER", "PEARL", "GARNET", "TOPAZ", "OPAL", "CITRINE", "LAPIS", "JADE", "TURQUOISE",
+	"APPLE", "PEAR", "GRAPE", "LEMON", "MANGO", "KIWI", "TOMATO", "CARROT",
+	"PEAS", "ONION", "GARLIC", "CELERY", "LIME", "PLUM", "BERRY", "CHERRY",
+	"PEACH", "MELON", "LIME", "OPAL", "RUBY", "JADE", "TOPAZ", "OPAL",
+	"GARNET", "AMBER", "PEARL", "CITRINE", "FICUS",
 }
 
 func (lobby *Lobby) CreateNewGame() *Lobby {
@@ -108,7 +116,7 @@ func (lobby *Lobby) StartGame() (*Lobby, error) {
 	}
 
 	//Get server
-	serverIndex := 0 //rand.Intn(len(lobby.Players))
+	serverIndex := rand.Intn(len(lobby.Players))
 	lobby.Game.CurrentServer = serverIndex
 
 	// Initialize rally
@@ -120,8 +128,10 @@ func (lobby *Lobby) StartGame() (*Lobby, error) {
 }
 
 func (lobby *Lobby) initializeRally() *Lobby {
+	wordIndex := rand.Intn(len(WordList))
+	randomWord := WordList[wordIndex]
 	lobby.Game.Rally = &Rally{
-		Word:             "A",
+		Word:             randomWord,
 		StatusEffects:    make(map[string]map[SkillType]*StatusEffect),
 		Guesses:          make(map[string][]rune),
 		Turn:             lobby.Game.CurrentServer,
@@ -166,7 +176,7 @@ func (lobby *Lobby) Guess(player Player, actionDetails ActionDetails) (*Lobby, e
 
 				// Goalkeeper effect
 				goalkeeperEffect, exists := lobby.Game.Rally.StatusEffects[player.ID][Goalkeeper]
-				// log.Printf("GOALKEEPER OR NOT" + st)
+				// log.Printf("GOALKEEPER OR NOT")
 				if exists && goalkeeperEffect.IsActive && goalkeeperEffect.Duration > 0 {
 
 					goalkeeperEffect.Duration--
@@ -272,7 +282,26 @@ func (lobby *Lobby) EndTurn(player Player) (*Lobby, error) {
 }
 
 func (lobby *Lobby) initializeNextPlayerTurn(nextTurnPlayerID string) *Lobby {
-	lobby.updatePlayerTurnActionPoints(nextTurnPlayerID, 1, 1)
+
+	faultEffect, exists := lobby.Game.Rally.StatusEffects[nextTurnPlayerID][Fault]
+
+	if exists && faultEffect.IsActive && faultEffect.Duration > 0 {
+		lobby.updatePlayerTurnActionPoints(nextTurnPlayerID, 0, 0)
+
+		faultEffect.Duration--
+		if faultEffect.Duration == 0 {
+			faultEffect.IsActive = false
+		}
+		// if lobby.Game.Rally.StatusEffects[nextTurnPlayerID][Fault].IsActive && lobby.Game.Rally.StatusEffects[nextTurnPlayerID][Fault].Duration > 0 {
+		// 	lobby.updatePlayerTurnActionPoints(nextTurnPlayerID, 0, 0)
+		// 	lobby.Game.Rally.StatusEffects[nextTurnPlayerID][Fault].Duration--
+		// 	if lobby.Game.Rally.StatusEffects[nextTurnPlayerID][Fault].Duration == 0 {
+
+		// 		lobby.Game.Rally.StatusEffects[nextTurnPlayerID][Fault].IsActive = false
+		// 	}
+	} else {
+		lobby.updatePlayerTurnActionPoints(nextTurnPlayerID, 1, 1)
+	}
 	return lobby
 }
 

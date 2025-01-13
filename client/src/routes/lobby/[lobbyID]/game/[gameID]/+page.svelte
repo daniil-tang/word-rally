@@ -103,11 +103,14 @@
                 >Cooldown: {$lobby.Game?.PlayerCooldowns?.[$player.ID]?.[skillData.id]}</button
               >
             {:else}
-              <button
-                on:click={() => handleSkillClick(skillData.id)}
-                class={`nes-btn ${($lobby.Game?.PlayerCooldowns?.[$player.ID]?.[skillData.id] ?? 0) > 0 ? "is-disabled" : ""}`}
-                >{skillData.name}</button
-              >
+              <div class="tooltip-container">
+                <button
+                  on:click={() => handleSkillClick(skillData.id)}
+                  class={`nes-btn ${($lobby.Game?.PlayerCooldowns?.[$player.ID]?.[skillData.id] ?? 0) > 0 ? "is-disabled" : ""}`}
+                  >{skillData.name}</button
+                >
+                <div class="tooltip-text">{skillData.description}</div>
+              </div>
             {/if}
           {/each}
         </div>
@@ -168,6 +171,48 @@
           {log}
         </div>
       {/each}
+    </div>
+  </div>
+  <br />
+  <br />
+  <div class="nes-text instructions">
+    <h2>How to play</h2>
+    <p>Players take turns guessing the word.</p>
+    <p>First to guess the word wins the rally.</p>
+    <p>First to 3 wins the game!</p>
+    <br />
+    <h2>Stances and Skills</h2>
+
+    <div>
+      <h3>Tennis</h3>
+      <ul>
+        <li>
+          <h4>Ace</h4>
+          <p><strong>Cooldown:</strong> 4 turns</p>
+          <p>Instantly grants a correct guess. (Requires 1 guess point).</p>
+        </li>
+        <li>
+          <h4>Fault</h4>
+          <p><strong>Cooldown:</strong> 5 turns</p>
+          <p>Makes opponent miss next turn.</p>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Football</h3>
+      <ul>
+        <li>
+          <h4>Tackle</h4>
+          <p><strong>Cooldown:</strong> 3 turns</p>
+          <p>Steals a correct guess from the opponent.</p>
+        </li>
+        <li>
+          <h4>Goalkeeper</h4>
+          <p><strong>Cooldown:</strong> 4 turns</p>
+          <p>Block the opponent's next correct guess.</p>
+        </li>
+      </ul>
     </div>
   </div>
 </div>
@@ -288,5 +333,36 @@
     /* background-color: #444; */
     padding: 5px;
     border-radius: 4px;
+  }
+
+  .tooltip-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Tooltip text style */
+  .tooltip-text {
+    visibility: hidden;
+    background-color: #000;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position the tooltip above the button */
+    left: 50%;
+    margin-left: -60px;
+    font-family: "Press Start 2P", cursive; /* NES-style pixel font */
+    font-size: 12px;
+    width: 120px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Show the tooltip on hover */
+  .tooltip-container:hover .tooltip-text {
+    visibility: visible;
   }
 </style>
