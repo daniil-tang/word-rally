@@ -19,5 +19,5 @@ func main() {
 
 	log.Println("Server is running on http://localhost:8080")
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe("0.0.0.0:8080", nil)
 }
