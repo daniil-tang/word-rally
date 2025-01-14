@@ -76,6 +76,38 @@ func (gm *GameManager) JoinLobby(lobbyID string, player Player) (*Lobby, error) 
 	return lobby, nil
 }
 
+func (gm *GameManager) LeaveLobby(lobbyID string, player Player) (*Lobby, error) {
+	if gm.lobbies[lobbyID] == nil {
+		return nil, fmt.Errorf("Lobby with ID %s doesn't exist.", lobbyID)
+	}
+
+	lobby := gm.lobbies[lobbyID]
+
+	for i, p := range lobby.Players {
+		if p.ID == player.ID {
+			lobby.Players = append(lobby.Players[:i], lobby.Players[i+1:]...)
+			//Reassign host
+			if p.ID == lobby.Host {
+				if len(lobby.Players) > 0 {
+					// Assign host to the next player (first player in the updated slice)
+					lobby.Host = lobby.Players[0].ID
+				} else {
+					// If no players left, set host to empty
+					lobby.Host = ""
+				}
+			}
+			break
+		}
+	}
+
+	if len(lobby.Players) <= 0 {
+		delete(gm.lobbies, lobbyID)
+		lobby = nil
+	}
+
+	return lobby, nil
+}
+
 // Call this before join/create lobby
 func (gm *GameManager) GetLobbyByPlayer(playerID string) (*Lobby, error) {
 	for _, lobby := range gm.lobbies {

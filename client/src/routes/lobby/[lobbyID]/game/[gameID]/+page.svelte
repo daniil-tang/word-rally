@@ -3,6 +3,7 @@
   import { createGame, endTurn, guess, useSkill } from "$lib/api";
   import { GAME_STATE, STANCE_DATA } from "$lib/constants";
   import { actionLog, lobby, player } from "$lib/store";
+  import { onMount } from "svelte";
 
   $: {
     if (!$player?.ID) goto("/");
@@ -35,8 +36,13 @@
     }
   }
 
+  onMount(() => {
+    actionLog.set([]);
+  });
+
   async function handleGuess() {
     await guess($lobby.ID, $player, guessValue);
+    guessValue = "";
   }
 
   function handleEndTurn() {

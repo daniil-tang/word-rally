@@ -39,6 +39,11 @@ type LobbyJoinRequest struct {
 	Player  Player `json:"player"`  // The player data
 }
 
+type LobbyLeaveRequest struct {
+	LobbyID string `json:"lobbyId"` // The ID of the lobby
+	Player  Player `json:"player"`  // The player data
+}
+
 type GameCreateRequest struct {
 	LobbyID string `json:"lobbyId"` // The ID of the lobby
 	Player  Player `json:"player"`  // The player data
@@ -214,27 +219,48 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					continue
 				}
 				lobby, err := gm.JoinLobby(lobbyJoinRequest.LobbyID, lobbyJoinRequest.Player)
-				// Needs error handling
 				if err != nil {
 					log.Println("Error joining lobby", err)
 					continue
 				}
-				// Needs propagating the updated lobby to other players
-				// err = conn.WriteJSON(lobby)
 				encodedMsg, err := lobby.getEncodedLobbyWSResponse()
 				if err != nil {
 					log.Println("Error encoding message", err)
 					continue // Exit if writing fails
 				}
 
-				// err = conn.WriteMessage(websocket.TextMessage, encodedMsg)
-				// if err != nil {
-				// 	log.Println("Error sending lobby back to client", err)
-				// 	continue // Exit if writing fails
-				// }
 				gm.broadcastToLobbyPlayers(lobby.ID, encodedMsg)
 			case "leavelobby":
-				//TODO
+				var lobbyLeaveRequest LobbyLeaveRequest
+				err := json.Unmarshal([]byte(message.Data), &lobbyLeaveRequest)
+				if err != nil {
+					log.Println("Error unmarshalling lobby leave request", err)
+					continue
+				}
+				lobby, err := gm.LeaveLobby(lobbyLeaveRequest.LobbyID, lobbyLeaveRequest.Player)
+				if err != nil {
+					log.Println("Error leaving lobby", err)
+					continue
+				}
+				if lobby != nil {
+					encodedMsg, err := lobby.getEncodedLobbyWSResponse()
+					if err != nil {
+						log.Println("Error encoding message", err)
+						continue // Exit if writing fails
+					}
+					gm.broadcastToLobbyPlayers(lobby.ID, encodedMsg)
+				}
+				noLobbyResp, err := getEncodedWSResponse(GameResponseLobby, "{}")
+				if err != nil {
+					log.Println("Error encoding lobby message:", err)
+					continue
+				}
+				err = gm.connections[lobbyLeaveRequest.Player.ID].WriteMessage(websocket.TextMessage, noLobbyResp)
+				if err != nil {
+					log.Println("Error sending message back to client", err)
+					continue
+				}
+				// }
 				continue
 			case "creategame":
 				var gameCreateRequest GameCreateRequest

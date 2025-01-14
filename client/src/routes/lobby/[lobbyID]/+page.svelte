@@ -1,12 +1,9 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { createGame, startGame, updatePlayerSettings } from "$lib/api";
+  import { createGame, leaveLobby, startGame, updatePlayerSettings } from "$lib/api";
   import { GAME_STATE, STANCES } from "$lib/constants";
   import { player, lobby } from "$lib/store";
   import { onMount } from "svelte";
-
-  $: selectedStance = $lobby.PlayerSettings[$player.ID].Stance;
-  // $: playerReady = $lobby?.PlayerSettings[$player.ID].Ready;
 
   $: {
     if (!$player?.ID) goto("/");
@@ -15,6 +12,9 @@
     if ($lobby?.Game?.State == GAME_STATE.IN_PROGRESS) goto(`/lobby/${$lobby.ID}/game/${$lobby.Game.ID}`);
     // if ($lobby?.Game?.State == GAME_STATE.FINISHED) goto(`/`); // Prolly don't need this..?
   }
+
+  $: selectedStance = $lobby?.PlayerSettings?.[$player.ID]?.Stance;
+  // $: playerReady = $lobby?.PlayerSettings[$player.ID].Ready;
 
   $: {
     if (selectedStance) {
@@ -44,10 +44,18 @@
     await createGame($lobby.ID, $player);
     await startGame($lobby.ID, $player);
   }
+
+  async function handleLeaveLobby() {
+    await leaveLobby($lobby.ID, $player);
+  }
 </script>
 
 <div>
-  <h1>Game Lobby</h1>
+  <div class="topbar">
+    <h1>Game Lobby</h1>
+    <button type="button" class={`nes-btn`} on:click={handleLeaveLobby}>Leave</button>
+  </div>
+  <p>Host: {$lobby.Players.find((p) => p.ID == $lobby.Host)?.Name}</p>
   <p>Code: {$lobby.ID}</p>
   <div class="inline-flex">
     <div class="nes-container player-container">
@@ -105,6 +113,10 @@
 </div>
 
 <style>
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+  }
   .inline-flex {
     display: inline-flex;
   }

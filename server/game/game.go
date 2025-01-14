@@ -90,6 +90,10 @@ var WordList = []string{
 	"GARNET", "AMBER", "PEARL", "CITRINE", "FICUS",
 }
 
+// var WordList = []string{
+// 	"APPLE", "PEAR", "GRAPE",
+// }
+
 func (lobby *Lobby) CreateNewGame() *Lobby {
 	lobby.Game = &Game{
 		ID:              uuid.NewString(),

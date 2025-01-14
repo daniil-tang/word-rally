@@ -23,7 +23,8 @@ export async function initWS() {
     console.log("EVENT DATA", eventData, eventData.event);
     switch (eventData.event) {
       case "lobby":
-        lobby.set(JSON.parse(eventData.data));
+        let lob = JSON.parse(eventData.data)?.ID ? JSON.parse(eventData.data) : null;
+        lobby.set(lob);
         console.log("RALLY", JSON.parse(eventData.data)?.Game?.Rally?.StatusEffects);
         break;
       // Should add an error case: Or default = error
@@ -82,6 +83,16 @@ export async function registerConnection(p: Player) {
 export async function joinLobby(lobbyID: string, p: Player) {
   sendMessage({
     Event: "joinlobby",
+    Data: JSON.stringify({
+      lobbyID,
+      player: p,
+    }),
+  });
+}
+
+export async function leaveLobby(lobbyID: string, p: Player) {
+  sendMessage({
+    Event: "leavelobby",
     Data: JSON.stringify({
       lobbyID,
       player: p,
