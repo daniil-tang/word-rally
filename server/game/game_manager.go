@@ -32,6 +32,61 @@ func NewGameManager() *GameManager {
 	}
 }
 
+func (gm *GameManager) RemoveConnectionByConn(conn *websocket.Conn) *Lobby {
+	// Iterate through the connections map to find the matching connection
+	for playerID, currentConn := range gm.connections {
+		if currentConn == conn {
+			// We found the matching connection
+			err := conn.Close()
+			if err != nil {
+				log.Printf("Error closing connection for %s: %v\n", playerID, err)
+			}
+
+			// Remove the connection from the map
+			delete(gm.connections, playerID)
+
+			log.Printf("Connection for player %s removed successfully\n", playerID)
+
+			_lobby, err := gm.GetLobbyByPlayer(playerID)
+			if err != nil {
+				log.Printf("Lobby for player not found", err.Error())
+				return nil
+			}
+
+			if _lobby != nil {
+				for i, p := range _lobby.Players {
+					if p.ID == playerID {
+						_lobby.Players = append(_lobby.Players[:i], _lobby.Players[i+1:]...)
+						//Reassign host
+						if p.ID == _lobby.Host {
+							if len(_lobby.Players) > 0 {
+								// Assign host to the next player (first player in the updated slice)
+								_lobby.Host = _lobby.Players[0].ID
+							} else {
+								// If no players left, set host to empty
+								_lobby.Host = ""
+							}
+						}
+						break
+					}
+				}
+
+				_lobby.Game = nil
+
+				if len(_lobby.Players) <= 0 {
+					delete(gm.lobbies, _lobby.ID)
+					_lobby = nil
+				}
+				return _lobby
+			}
+			return _lobby
+		}
+	}
+
+	log.Println("Connection not found in map")
+	return nil
+}
+
 func (gm *GameManager) CreateLobby(hostPlayer Player) (*Lobby, error) {
 	if _, exists := players[hostPlayer.ID]; !exists {
 		return nil, fmt.Errorf("Player not found.")

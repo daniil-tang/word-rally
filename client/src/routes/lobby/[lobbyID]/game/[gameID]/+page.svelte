@@ -9,7 +9,7 @@
     if (!$player?.ID) goto("/");
     if (!$lobby) goto(`/lobby`);
     // Goto game screen
-    if ($lobby?.Game?.State == GAME_STATE.WAITING) goto(`/lobby/${$lobby.ID}`);
+    if (!$lobby?.Game || $lobby?.Game?.State == GAME_STATE.WAITING) goto(`/lobby/${$lobby.ID}`);
   }
 
   $: opponent = $lobby.Players.find((p) => p.ID != $player.ID) ?? { ID: "", Name: "" }; //Hacky

@@ -194,6 +194,31 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 			log.Println("Could not open websocket connection", err)
 		}
 
+		defer conn.Close()
+		conn.SetCloseHandler(func(code int, text string) error {
+			log.Printf("WebSocket closed with code: %d, reason: %s\n", code, text)
+			lobby := gm.RemoveConnectionByConn(conn)
+			if lobby != nil {
+				encodedMsg, err := lobby.getEncodedLobbyWSResponse()
+				if err != nil {
+					log.Println("Error encoding message", err)
+					return nil // Exit if writing fails
+				}
+				gm.broadcastToLobbyPlayers(lobby.ID, encodedMsg)
+			}
+			// noLobbyResp, err := getEncodedWSResponse(GameResponseLobby, "{}")
+			// if err != nil {
+			// 	log.Println("Error encoding lobby message:", err)
+			// 	return nil
+			// }
+			// err = gm.connections[lobbyLeaveRequest.Player.ID].WriteMessage(websocket.TextMessage, noLobbyResp)
+			// if err != nil {
+			// 	log.Println("Error sending message back to client", err)
+			// 	return nil
+			// }
+			return nil
+		})
+
 		for {
 			var message GameMessage
 			err := conn.ReadJSON(&message)
