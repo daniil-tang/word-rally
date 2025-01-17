@@ -1,48 +1,13 @@
-{
-"event": "startgame",
-"data": "{\"lobbyID\": \"PORY\",\n \"player\":{\"ID\":\"745e7592-46a6-4c1a-9085-b990f25ad722\",\"Name\":\"P1\"}}"
-}
+# Setup
+- Have the following installed
+  - NodeJS
+  - pnpm
+  - Go
+- Run `make dev -j`
 
-{
-"ID": "P6N1",
-"Players": [
-{
-"ID": "9c4b4220-99e7-4594-93db-d6e34793bf3f",
-"Name": "P1"
-},
-{
-"ID": "9c4b4220-99e7-4594-93db-d6e34793bf3f",
-"Name": "P1"
-}
-],
-"Game": null,
-"Host": "9c4b4220-99e7-4594-93db-d6e34793bf3f",
-"MaxPlayers": 2
-}
-
-[72 101 108 108 111]
-
-{
-"event": "playeraction",
-"data": "{\"lobbyID\": \"NF4I\",\"player\":{\"ID\":\"32b2c1f7-fa78-45d5-8a42-f95fcbad49a6\",\"Name\":\"P2\"},\"action\":\"guess\",\"actionDetails\":{\"guessedLetters\":[72,101,108,108,111]}}"
-}
-
-{
-"event": "creategame",
-"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p1\",\"Name\":\"P1\"}}"
-}
-
-{
-"event": "joinlobby",
-"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p2\",\"Name\":\"P2\"}}"
-}
-
-{
-"event": "startgame",
-"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p1\",\"Name\":\"P1\"}}"
-}
-
-{
-"event": "updateplayersettings",
-"data": "{\"lobbyID\": \"ABCD\",\n \"player\":{\"ID\":\"p1\",\"Name\":\"P1\"},\n \"playerSettings\": {\"stance\": \"tennis\"}}"
-}
+# Gameplay
+- Players take turns guessing a letter each turn until one player completes the word, thereby winning the rally.
+- Each turn, players have 1 guess point and 1 skill point by default
+  - Guessing a letter consumes 1 guess point
+  - Activating a skill consumes 1 skill point
+- First player to win 3 rallies wins the game.
