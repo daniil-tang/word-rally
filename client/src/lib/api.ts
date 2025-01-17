@@ -4,6 +4,8 @@ import type { Player, PlayerSettings, WebSocketIncomingMessage, WebSocketOutgoin
 const BASE_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:8080";
 const WS_URL = import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8080/ws";
 // const BASE_URL = "http://localhost:8080";
+// const BASE_URL = "http://127.0.0.1/api";
+// const WS_URL = "ws://127.0.0.1/ws";
 console.log("ENV VAR", BASE_URL);
 export async function initWS() {
   // const socket = new WebSocket("ws://localhost:8080/ws");
@@ -11,6 +13,9 @@ export async function initWS() {
   socket.addEventListener("open", function (event) {
     console.log("WebSocket open.");
     websocket.set(socket);
+    player.subscribe((newPlayer) => {
+      registerConnection(newPlayer);
+    });
   });
 
   socket.addEventListener("close", function (event) {

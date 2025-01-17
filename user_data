@@ -52,7 +52,7 @@ chmod +x /home/ec2-user/word-rally-server
 
 # Set environment variables for the entire shell session
 echo "export VITE_SERVER_URL=http://44.224.115.98/api" >> ~/.bash_profile
-echo "export VITE_WEBSOCKET_URL=http://44.224.115.98/ws" >> ~/.bash_profile
+echo "export VITE_WEBSOCKET_URL=ws://44.224.115.98/ws" >> ~/.bash_profile
 
 # Load new environment variables
 source ~/.bash_profile
@@ -71,7 +71,9 @@ cd /home/ec2-user/word-rally/client
 # pm2 start ecosystem.config.js 
 pm2 start ./build/index.js --name word-rally-client
 cd /home/ec2-user/word-rally/server
-./word-rally-server
+pm2 start ./word-rally-server --name word-rally-server
+# ./word-rally-server &
+# nohup /home/ec2-user/word-rally-server &> /home/ec2-user/word-rally-server.log &
 
 /bin/echo "Hello World 2 - NGINX Stuff" >> /home/ec2-user/testfile.txt
 
@@ -96,7 +98,7 @@ http {
 
         # Proxy API requests to Go backend
         location /api/ {
-            proxy_pass http://localhost:8080;
+            proxy_pass http://localhost:8080/;
             proxy_http_version 1.1;
             proxy_set_header Upgrade \$http_upgrade;  # Required for WebSockets
             proxy_set_header Connection "upgrade";  # Required for WebSockets
@@ -118,6 +120,10 @@ http {
             proxy_set_header Upgrade \$http_upgrade;  # Required for WebSockets
             proxy_set_header Connection "upgrade";  # Required for WebSockets
             proxy_set_header Host \$host;
+
+            proxy_read_timeout 3600s;
+            proxy_send_timeout 3600s;
+            send_timeout 3600s;
         }
     }
 }

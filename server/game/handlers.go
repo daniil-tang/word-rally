@@ -280,11 +280,16 @@ func HandleWebSocketConnection(gm *GameManager) http.HandlerFunc {
 					log.Println("Error encoding lobby message:", err)
 					continue
 				}
-				err = gm.connections[lobbyLeaveRequest.Player.ID].WriteMessage(websocket.TextMessage, noLobbyResp)
+				// if conn, exists := gm.connections[lobbyLeaveRequest.Player.ID]; exists {
+				err = conn.WriteMessage(websocket.TextMessage, noLobbyResp)
 				if err != nil {
 					log.Println("Error sending message back to client", err)
 					continue
 				}
+				// } else {
+				// 	log.Printf("Connection for player %s not found", lobbyLeaveRequest.Player.ID)
+				// }
+
 				// }
 				continue
 			case "creategame":

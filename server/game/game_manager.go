@@ -33,6 +33,8 @@ func NewGameManager() *GameManager {
 }
 
 func (gm *GameManager) RemoveConnectionByConn(conn *websocket.Conn) *Lobby {
+	gm.connMutex.Lock()
+	defer gm.connMutex.Unlock()
 	// Iterate through the connections map to find the matching connection
 	for playerID, currentConn := range gm.connections {
 		if currentConn == conn {
@@ -299,7 +301,11 @@ func (gm *GameManager) GetLobbyConnections(lobbyID string) []*websocket.Conn {
 	var lobbyConnections []*websocket.Conn
 
 	for _, p := range gm.lobbies[lobbyID].Players {
-		lobbyConnections = append(lobbyConnections, gm.connections[p.ID])
+		if conn, exists := gm.connections[p.ID]; exists {
+			lobbyConnections = append(lobbyConnections, conn)
+		} else {
+			log.Printf("Connection for player %s not found", p.ID)
+		}
 	}
 
 	return lobbyConnections
